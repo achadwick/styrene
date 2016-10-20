@@ -1,6 +1,14 @@
 /*
  * Launcher stub - calls a bash script with its args, without a window.
+ * Sometimes they're launched directly, if the command line is simple
+ * enough for Windows.
  * One of these is compiled with an icon for each converted .desktop file.
+ *
+ * This source code, and any executable code generated from it,
+ * is dedicated into the public domain, CC0 v1.0
+ * https://creativecommons.org/publicdomain/zero/1.0/
+ * In other words, feel free to redistribute the launcher .exes under
+ * your own license ☺
  */
 
 #ifndef UNICODE

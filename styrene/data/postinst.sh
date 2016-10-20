@@ -2,6 +2,9 @@
 # Runs all the post_install scriptlets to adapt to a new install
 # location.  This script is called directly by the launcher .exes, or
 # indirectly by the installer .exe.
+#
+# This file is dedicated into the public domain, CC0 v1.0.
+# https://creativecommons.org/publicdomain/zero/1.0/
 
 LOCATION_STATEFILE="%(state_file)s"
 START_MENU_PROGRAMS=""

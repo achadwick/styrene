@@ -1,4 +1,6 @@
-# NSIS installer template, processed by bundle.py
+# NSIS installer template, processed by bundle.py.
+# This file is dedicated into the public domain, CC0 v1.0.
+# https://creativecommons.org/publicdomain/zero/1.0/
 
 !define UNINST_KEY \
     "Software\Microsoft\Windows\CurrentVersion\Uninstall\%(regname)s"

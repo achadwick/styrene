@@ -4,6 +4,9 @@ REM Runs all the post_install scriptlets using MSYS2 bash.
 REM Usage: postinst.cmd SMPROGRAMS
 REM This script should only be called by the installer .exe.
 
+REM This file is dedicated into the public domain, CC0 v1.0.
+REM https://creativecommons.org/publicdomain/zero/1.0/
+
 SETLOCAL
 
 CD %~dp0
