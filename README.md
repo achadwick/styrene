@@ -1,19 +1,14 @@
 # Styrene – a package bundler
 
+[![Documentation Status](https://readthedocs.org/projects/styrene/badge/?version=latest)](http://styrene.readthedocs.io/en/latest/?badge=latest)
+
 Styrene makes usable app bundles for Windows.
 It repacks MSYS2 software into neat bundles that are nicer for your users,
 and easier for you to distribute.
 If a package containing your app is already available in MSYS2,
 it can be bundled with Styrene.
 
-## Documentation
-
-Styrene’s documentation is maintained with Sphinx.
-You will eventually be able to read it on readthedocs.io,
-but for now you can browse through the [docs](docs) folder
-on github or in your local copy.
-
-## Licensing
+## Licenses
 
 * [GPLv3](COPYING) for the tool itself.
 * [CC0][cc0] for code templates and generated code inside bundles.
