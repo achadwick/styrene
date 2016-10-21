@@ -8,6 +8,34 @@ and easier for you to distribute.
 If a package containing your app is already available in MSYS2,
 it can be bundled with Styrene.
 
+## Quick start
+
+1. Install [MSYS2](https://msys2.github.io/)
+   from its download page, and upgrade it as described there.
+
+2. Install Styrene’s dependencies from the *MSYS Shell* command line
+   that came with MSYS2:
+
+    ```sh
+    pacman -S python3
+    pacman -S zip
+    pacman -S mingw-w64-x86_64-nsis    # "x86_64" → "i686" for 32 bit
+    pacman -S mingw-w64-x86_64-gcc
+    pacman -S mingw-w64-x86_64-binutils
+    ```
+
+3. Clone Styrene from its GitHub repository and try it out!
+
+    ```sh
+    pacman -S git
+    git clone https://github.com/achadwick/styrene.git
+    cd styrene
+    ./styrene.sh gtk3-examples.cfg
+    start .     # then run the installer .exe
+    ```
+
+4. [Read the docs](http://styrene.readthedocs.io) to find out more.
+
 ## Licenses
 
 * [GPLv3](COPYING) for the tool itself.
