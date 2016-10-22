@@ -106,6 +106,20 @@ def main():
         metavar="DIR",
         default=None,
     )
+    parser.add_option(
+        "--no-win64",
+        help="Don't build 64-bit native bundles.",
+        action="store_false",
+        default=True,
+        dest="win64",
+    )
+    parser.add_option(
+        "--no-win32",
+        help="Don't build 32-bit native bundles.",
+        action="store_false",
+        default=True,
+        dest="win32",
+    )
     options, args = parser.parse_args(sys.argv[1:])
     if not len(args):
         parser.print_help()
