@@ -106,7 +106,7 @@ def main():
         "--debug",
         help="log lengthy debugging information",
         action="store_const",
-        const=logging.debug,
+        const=logging.DEBUG,
         dest="loglevel",
     )
     parser.add_option(
