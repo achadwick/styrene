@@ -336,21 +336,30 @@ class DesktopEntry:
                     root, consts.ICO_FILE_SUBDIR,
                     ico_basename,
                 )
-                ico_path = os.path.join(tmpdir, ico_basename)
-                ico_rc_path = os.path.join(tmpdir, "icon.rc")
-                ico_o_path = os.path.join(tmpdir, "icon.o")
                 if os.path.exists(orig_ico_path):
                     logger.debug("icon: %r" % (self._icon,))
+                    ico_rc = "icon.rc"
+                    ico_o = "icon.o"
+                    ico_path = os.path.join(tmpdir, ico_basename)
                     shutil.copy(orig_ico_path, ico_path)
+                    ico_rc_path = os.path.join(tmpdir, ico_rc)
                     with open(ico_rc_path, "w") as rc_fp:
                         print('1 ICON "%s"' % (ico_basename,), file=rc_fp)
-                    native_shell(
-                        bundle.msystem,
-                        'cd "$1" && windres "$2" "$3"',
-                        [tmpdir, ico_rc_path, ico_o_path],
-                    )
-                    assert os.path.exists(ico_o_path)
-                    objects.append("icon.o")
+                    try:
+                        native_shell(
+                            bundle.msystem,
+                            'cd "$1" && windres "$2" "$3"',
+                            [tmpdir, ico_rc, ico_o],
+                            cwd=tmpdir,
+                        )
+                    except:
+                        logger.exception(
+                            "Icon creation with windres failed",
+                        )
+                    else:
+                        ico_o_path = os.path.join(tmpdir, ico_o)
+                        if os.path.exists(ico_o_path):
+                            objects.append(ico_o)
 
             native_shell(
                 bundle.msystem,
