@@ -29,7 +29,7 @@ it can be bundled with Styrene.
     git clone https://github.com/achadwick/styrene.git
     cd styrene
     ./styrene.sh gtk3-examples.cfg
-    start .     # then run the installer .exe
+    start .     # then try running one of the installer .exe files
     ```
 
 4. [Read the docs](http://styrene.readthedocs.io) to find out more.

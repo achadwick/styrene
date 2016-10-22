@@ -19,6 +19,7 @@
 """Launching from the command line."""
 
 from .bundle import NativeBundle
+from . import consts
 
 import optparse
 import configparser
@@ -37,19 +38,27 @@ logger = logging.getLogger(__name__)
 
 def process_spec_file(spec, options):
     """Prepare the bundle as specified in the spec."""
-    bundle = NativeBundle(spec)
-    output_dir = options.output_dir
-    if not output_dir:
-        output_dir = os.getcwd()
-        with tempfile.TemporaryDirectory() as tmp_dir:
-            for distfile in bundle.write_distributables(tmp_dir):
-                distfile_final = os.path.join(
-                    output_dir,
-                    os.path.basename(distfile),
-                )
-                shutil.copy(distfile, distfile_final)
-    else:
-        bundle.write_distributables(output_dir)
+    msystems = []
+    if options.win64:
+        msystems.append(consts.MSYSTEM.MINGW64)
+    if options.win32:
+        msystems.append(consts.MSYSTEM.MINGW32)
+    if not msystems:
+        logger.warn("Nothing to do")
+    for msystem in msystems:
+        bundle = NativeBundle(spec, msystem)
+        output_dir = options.output_dir
+        if not output_dir:
+            output_dir = os.getcwd()
+            with tempfile.TemporaryDirectory() as tmp_dir:
+                for distfile in bundle.write_distributables(tmp_dir):
+                    distfile_final = os.path.join(
+                        output_dir,
+                        os.path.basename(distfile),
+                    )
+                    shutil.copy(distfile, distfile_final)
+        else:
+            bundle.write_distributables(output_dir)
 
 
 # Startup:
