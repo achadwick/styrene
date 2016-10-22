@@ -20,6 +20,7 @@
 #include <Shellapi.h>
 #include <stdio.h>
 #include <wchar.h>
+#include <stdlib.h>
 
 
 // Consts {{{1
