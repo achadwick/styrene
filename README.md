@@ -17,17 +17,15 @@ it can be bundled with Styrene.
    that came with MSYS2:
 
     ```sh
-    pacman -S python3
-    pacman -S zip
-    pacman -S mingw-w64-x86_64-nsis    # "x86_64" → "i686" for 32 bit
-    pacman -S mingw-w64-x86_64-gcc
-    pacman -S mingw-w64-x86_64-binutils
+    pacman -S --needed zip python3 \
+      mingw-w64-x86_64-gcc mingw-w64-x86_64-nsis mingw-w64-x86_64-binutils \
+      mingw-w64-i686-gcc mingw-w64-i686-nsis mingw-w64-i686-binutils
     ```
 
 3. Clone Styrene from its GitHub repository and try it out!
 
     ```sh
-    pacman -S git
+    pacman -S --needed git
     git clone https://github.com/achadwick/styrene.git
     cd styrene
     ./styrene.sh gtk3-examples.cfg
