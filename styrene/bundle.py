@@ -250,9 +250,13 @@ class NativeBundle:
         logger.info("Creating tree in “%s”…", root)
         for subpath in ["var/lib/pacman", "var/log", "tmp"]:
             os.makedirs(os.path.join(root, subpath), exist_ok=True)
-        subprocess.check_call(
-            ["pacman", "-Sy", "--root", root],
-        )
+        cmd = [
+            "pacman", "--sync", "--refresh",
+            "--quiet",
+            "--root", root,
+            "--noprogressbar",
+        ]
+        subprocess.check_call(cmd)
 
     def _install_packages(self, root, packages):
         """Helper: installs named packages into the tree."""
@@ -265,6 +269,7 @@ class NativeBundle:
             "--root", ".",
             "--needed",
             "--noconfirm",
+            "--noprogressbar",
             "--noscriptlet",  # postinst will do this
         ]
         cmd += packages
