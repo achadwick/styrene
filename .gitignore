@@ -1,4 +1,4 @@
 styrene/__pycache__
 *.pyc
 .*.swp
-doc/_build/*
+docs/_build/*
