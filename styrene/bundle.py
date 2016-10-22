@@ -43,15 +43,13 @@ logger = logging.getLogger(__name__)
 class NativeBundle:
     """Installable bundle for Win32 or Win64."""
 
-    def __init__(self, spec):
+    def __init__(self, spec, msystem):
         """Initializes a bundle from a specification."""
         super().__init__()
         self.spec = spec
         section = spec["bundle"]
-        # Validate and canonicalize the target arch name
-        msystem = section.get("msystem", "").strip()
-        msystem = consts.MSYSTEM.from_str(msystem)
-        self.msystem = msystem
+        # Validate and canonicalize the target arch
+        self.msystem = consts.MSYSTEM(msystem)
         # What to call generated files and directories
         self.stub_name = section.get("filename_stub", None)
         packages_raw = section.get("packages")

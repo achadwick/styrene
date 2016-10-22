@@ -27,6 +27,7 @@ import os.path
 import os
 import tempfile
 import shutil
+from textwrap import dedent
 import logging
 
 logger = logging.getLogger(__name__)
@@ -59,23 +60,23 @@ def main():
     # Parse command line args
     parser = optparse.OptionParser(
         usage="%prog [options] spec1.cfg ...",
-        description=str(
-            "Creates distributable installers and portable zipfiles "
-            "by bundling together MSYS2 packages."
-        ),
-        epilog=str(
-            "Normally a temp directory is used for building, "
-            "and the output distributables are then copied "
-            "into the current directory. "
-            "The temp dir is normally deleted after processing. "
-            "\n\n"
-            "Specifying --output-dir changes this behaviour: "
-            "no temp directory will be made. "
-            "The output dir will be created if it doesn't exist, "
-            "and all output will be retained there, not copied out. "
-            "The temporary bundle tree is kept too, "
-            "for inspection and testing."
-        ),
+        description=dedent("""
+            Creates distributable installers and portable zipfiles
+            by bundling together MSYS2 packages.
+        """).strip(),
+        epilog=dedent("""
+            Normally a temp directory is used for building,
+            and the output distributables are then copied
+            into the current directory.
+            The temp dir is normally deleted after processing.
+
+            Specifying --output-dir changes this behaviour:
+            no temp directory will be made.
+            The output dir will be created if it doesn't exist,
+            and all output will be retained there, not copied out.
+            The temporary bundle tree is kept too,
+            for inspection and testing.
+        """).strip(),
     )
     parser.add_option(
         "-q", "--quiet",
