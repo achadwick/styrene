@@ -262,9 +262,9 @@ class NativeBundle:
 
     def _install_packages(self, root, packages):
         """Helper: installs named packages into the tree."""
-        logger.info("Installing %r in %r", packages, root)
-        assert os.path.isdir(root)
         packages = list(packages)
+        logger.info("Installing %r into “%s”", packages, root)
+        assert os.path.isdir(root)
         cmd = [
             "pacman", "--sync",
             "--quiet",
