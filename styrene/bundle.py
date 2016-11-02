@@ -117,7 +117,9 @@ class NativeBundle:
 
             launcher_section = None
             if spec.has_section(launcher_name):
-                launcher_section = spec[launcher_name]
+                launcher_section = dict(
+                    spec.items(section=launcher_name, raw=True),
+                )
 
             # Update from any found file, then any found overrides
             launcher = DesktopEntry()

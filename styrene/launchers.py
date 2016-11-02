@@ -113,7 +113,7 @@ class DesktopEntry:
                 fp.close()
 
     def update(self, mapping, basename=None):
-        """Update a DesktopEntry from, e.g., a config section.
+        """Update a DesktopEntry from a mapping.
 
         :param mapping: a dict-like object.
         :param str basename: string to use as a replacement basename
@@ -125,7 +125,16 @@ class DesktopEntry:
         since any desktop entry listed in the bundle spec is assumed to
         be an application.
 
+        Note that if mapping is a section proxy object from a
+        configparser module, it should be from a RawConfigParser.
+        Desktop file definitions contain their own `%`-style
+        interpolations which configparser must not try to expand.
+
         """
+        caseinsens_mapping = {}
+        for key, value in mapping.items():
+            key = key.casefold()
+            caseinsens_mapping[key] = value
         if basename is not None:
             basename = str(basename)
             basename, ext = os.path.splitext(basename)
@@ -143,7 +152,7 @@ class DesktopEntry:
             ("_mimetypes", "Mimetypes", self._parse_mimetypes),
         ]
         for attr, key, conv in populate:
-            value = mapping.get(key)
+            value = caseinsens_mapping.get(key.casefold())
             if value is None:
                 continue
             value = str(value).strip()
