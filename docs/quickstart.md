@@ -15,6 +15,7 @@ You will need some extra packages to make Styrene work.
 
     ```sh
     pacman -S python3
+    pacman -S python3-pyalpm
     pacman -S zip
     pacman -S mingw-w64-{i686,x86_64}-nsis
     pacman -S mingw-w64-{i686,x86_64}-gcc

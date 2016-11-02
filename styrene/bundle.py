@@ -19,6 +19,8 @@
 """Bundle specification, read from input .cfg files, writes main output.
 """
 
+import pyalpm
+
 from .launchers import DesktopEntry
 from .utils import str2key
 from .utils import nsis_escape
@@ -32,6 +34,7 @@ import subprocess
 import sys
 import glob
 import shutil
+import functools
 from textwrap import dedent
 
 import logging
@@ -146,7 +149,7 @@ class NativeBundle:
         self._init_tree(distroot)
 
         self._cleanup(distroot)
-        self._install_native_packages(distroot)
+        self._install_native_packages(distroot, pkgdirs=options.pkgdirs)
         self._init_launchers(distroot)
         self._install_icons(distroot)
         self._install_exe_launchers(distroot)
@@ -260,26 +263,80 @@ class NativeBundle:
         ]
         subprocess.check_call(cmd)
 
-    def _install_packages(self, root, packages):
+    def _install_packages(self, root, packages, pkgdirs=()):
         """Helper: installs named packages into the tree."""
         packages = list(packages)
         logger.info("Installing %r into “%s”", packages, root)
         assert os.path.isdir(root)
-        cmd = [
-            "pacman", "--sync",
-            "--quiet",
-            "--root", ".",
+
+        cmd_common = [
+            "--root", root,
             "--needed",
             "--noconfirm",
             "--noprogressbar",
             "--noscriptlet",  # postinst will do this
         ]
-        cmd += packages
-        logger.info("Running “%s”…", " ".join(cmd))
-        subprocess.check_call(
-            cmd,
-            cwd=root,
-        )
+
+        # Divide the list of package names into ones that can be added
+        # from files in the pkgdirs, and ones which must be synced from
+        # the online repositories. In both cases, styrene assumes you
+        # want the most recent available version.
+
+        local_packages = set()
+        local_package_paths = set()
+        remaining_packages = set()
+        filename_re_tmpl = r'''
+            ^ {name}
+            - (?P<version> .+ )
+            - any
+            [.]pkg[.]tar
+            (?: [.](?:gz|xz) )?
+            $
+        '''
+        keyobj = functools.cmp_to_key(pyalpm.vercmp)
+        for pkg_name in packages:
+            filename_re = filename_re_tmpl.format(
+                name=re.escape(pkg_name),
+            )
+            filename_re = re.compile(filename_re, re.X | re.I)
+            matches = []
+            for pkgdir in pkgdirs:
+                for entry in os.listdir(pkgdir):
+                    m = filename_re.match(entry)
+                    if not m:
+                        continue
+                    version = m.groupdict()["version"]
+                    matchinfo = (version, os.path.join(pkgdir, entry))
+                    matches.append(matchinfo)
+                    logger.debug(
+                        "Found %s version %s in “%s”",
+                        pkg_name, version, pkgdir,
+                    )
+            if matches:
+                matches.sort(key=lambda vp: (keyobj(vp[0]), vp[1]))
+                most_recent_match = matches[-1]
+                _, package_path = most_recent_match
+                logger.info("Using “%s” for %s", package_path, pkg_name)
+                local_package_paths.add(package_path)
+                local_packages.add(pkg_name)
+            else:
+                remaining_packages.add(pkg_name)
+
+        if local_package_paths:
+            cmd = ["pacman", "--upgrade"]
+            cmd += cmd_common
+            cmd += list(local_package_paths)
+            logger.debug("Running “%s”…", " ".join(cmd))
+            subprocess.check_call(cmd)
+
+        if remaining_packages:
+            cmd = ["pacman", "--sync", "--quiet"]
+            cmd += cmd_common
+            cmd += list(remaining_packages)
+            if local_packages:
+                cmd += ["--ignore", ",".join(local_packages)]
+            logger.debug("Running “%s”…", " ".join(cmd))
+            subprocess.check_call(cmd)
 
     def _install_postinst_scripts(self, root):
         """Installs specified post-install scripting for the bundle.
@@ -334,7 +391,7 @@ class NativeBundle:
         with open(postinst_sh, "w") as fp:
             print(sh, end=cr, file=fp)
 
-    def _install_native_packages(self, root):
+    def _install_native_packages(self, root, pkgdirs):
         """Installs the packages in the bundle’s specification."""
         logger.info("Installing packages requested in the spec…")
         substs = self.msystem.substs
@@ -342,7 +399,7 @@ class NativeBundle:
         packages += " {pkg_prefix}win7appid"
         packages = packages.format(**substs)
         packages = packages.strip().split()
-        self._install_packages(root, packages)
+        self._install_packages(root, packages, pkgdirs=pkgdirs)
 
     def _install_icons(self, root):
         """Installs freedesktop icons specified in [bundle]→icons.
