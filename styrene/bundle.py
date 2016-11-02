@@ -139,7 +139,7 @@ class NativeBundle:
                 )
         logger.debug("New launchers: %r", self.launchers)
 
-    def write_distributables(self, output_dir):
+    def write_distributables(self, output_dir, options):
         """Create all distributable files for the bundle."""
 
         distroot = os.path.join(output_dir, self.stub_name)

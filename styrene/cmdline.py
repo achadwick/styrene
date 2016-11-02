@@ -117,14 +117,15 @@ def process_spec_file(spec, options):
         if not output_dir:
             output_dir = os.getcwd()
             with tempfile.TemporaryDirectory() as tmp_dir:
-                for distfile in bundle.write_distributables(tmp_dir):
+                written = bundle.write_distributables(tmp_dir, options)
+                for distfile in written:
                     distfile_final = os.path.join(
                         output_dir,
                         os.path.basename(distfile),
                     )
                     shutil.copy(distfile, distfile_final)
         else:
-            bundle.write_distributables(output_dir)
+            bundle.write_distributables(output_dir, options)
 
 
 # Startup:
@@ -209,6 +210,14 @@ def main():
         action="store_false",
         default=True,
         dest="win32",
+    )
+    parser.add_option(
+        "-p", "--pkg-dir",
+        metavar="DIR",
+        help="Preferentially use package files from DIR.",
+        action="append",
+        dest="pkgdirs",
+        default=[],
     )
     options, args = parser.parse_args(sys.argv[1:])
     if not len(args):
