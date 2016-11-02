@@ -57,14 +57,11 @@ class NativeBundle:
         """Initializes a bundle from a specification."""
         super().__init__()
         self.spec = spec
-        section = spec["bundle"]
-        # Validate and canonicalize the target arch
+        #: The target architecture, prefixes etc.
         self.msystem = consts.MSYSTEM(msystem)
         #: Collected metadata, only useful after package installation.
         self.metadata = {}
-        # For NSIS file generation
         self.icon = ""
-        # Launchers
         self.launchers = []
 
     @property
@@ -212,6 +209,14 @@ class NativeBundle:
 
     @property
     def display_name(self):
+        """The name to display when referring to the bundle.
+
+        This property is normally derived from the primary packages's
+        entry in the install tree's package database.
+
+        It can be overridden in [bundle]→display name.
+
+        """
         d = self._section.get("display_name", None)
         if d:
             d = d.strip()
@@ -224,6 +229,14 @@ class NativeBundle:
 
     @property
     def description(self):
+        """Textual description of the bundle.
+
+        This property is normally derived from the primary packages's
+        entry in the install tree's package database.
+
+        It can be overridden in [bundle]→description.
+
+        """
         s = self._section
         d = self.display_name
         d = s.get("description", self.metadata.get("description", d))
@@ -231,12 +244,28 @@ class NativeBundle:
 
     @property
     def url(self):
+        """Home page URL for the bundle.
+
+        This property is normally derived from the primary packages's
+        entry in the install tree's package database.
+
+        It can be overridden in [bundle]→url.
+
+        """
         s = self._section
         u = "http://msys2.github.io"
         return s.get("url", self.metadata.get("url", u)).strip()
 
     @property
     def publisher(self):
+        """Package publisher.
+
+        This property is normally derived from the primary packages's
+        entry in the install tree's package database.
+
+        It can be overridden in [bundle]→publisher.
+
+        """
         s = self._section
         p = "MSYS2"
         if "packager" in self.metadata:
@@ -451,7 +480,14 @@ class NativeBundle:
             print(sh, end=cr, file=fp)
 
     def _install_native_packages(self, root, pkgdirs):
-        """Installs the packages in the bundle’s specification."""
+        """Installs the packages in the bundle’s specification.
+
+        The win7appid binary for the target architecture is installed
+        too, because the post-install scripting will need it for
+        associating launcher shortcuts with launcher binaries and any
+        spawned cmd windows.
+
+        """
         logger.info("Installing packages requested in the spec…")
         substs = self.msystem.substs
         packages = list(self.packages)
