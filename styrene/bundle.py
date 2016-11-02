@@ -60,12 +60,8 @@ class NativeBundle:
         section = spec["bundle"]
         # Validate and canonicalize the target arch
         self.msystem = consts.MSYSTEM(msystem)
-        # Extract package metadata
-        substs = self.msystem.substs
-        self.main_package = first_package_tmpl.format(**substs)
-        metadata = self._get_package_metadata(self.main_package)
-        logger.info("Got metadata for %r", self.main_package)
-        self.metadata = metadata
+        #: Collected metadata, only useful after package installation.
+        self.metadata = {}
         # For NSIS file generation
         self.icon = ""
         # Launchers
@@ -145,6 +141,7 @@ class NativeBundle:
 
         self._cleanup(distroot)
         self._install_native_packages(distroot, pkgdirs=options.pkgdirs)
+        self._init_metadata(distroot)
         self._init_launchers(distroot)
         self._install_icons(distroot)
         self._install_exe_launchers(distroot)
@@ -247,9 +244,21 @@ class NativeBundle:
             p = re.sub(r'\s*<[^@>]+@[^>]+>\s*', " ", p)  # strip email
         return s.get("publisher", p).strip()
 
+    def _init_metadata(self, root):
+        """Update self.metadata from the first listed package."""
+        main_package = self.packages[0]
+        metadata = self._get_package_metadata(main_package, root)
+        logger.debug("Got metadata for “%s”: %r", main_package, metadata)
+        self.metadata.update(metadata)
+
     @staticmethod
-    def _get_package_metadata(name):
-        cmd = ["pacman", "--sync", "--info", name]
+    def _get_package_metadata(name, root):
+        """Get details about a package from the db of installed packages."""
+        cmd = [
+            "pacman", "--query",
+            "--info", name,
+            "--root", root,
+        ]
         try:
             info_str = subprocess.check_output(
                 cmd,
