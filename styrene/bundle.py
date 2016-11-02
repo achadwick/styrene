@@ -60,21 +60,6 @@ class NativeBundle:
         section = spec["bundle"]
         # Validate and canonicalize the target arch
         self.msystem = consts.MSYSTEM(msystem)
-        # What to call generated files and directories
-        self.stub_name = section.get("filename_stub", None)
-        packages_raw = section.get("packages")
-        packages_raw = packages_raw.strip().split()
-        first_package_tmpl = packages_raw[0]
-        if self.stub_name is None:
-            self.stub_name = packages_raw[0].format(pkg_prefix="")
-        if not re.match(r'^[\w+-]+$', self.stub_name):
-            raise ValueError(str(
-                    "Cannot use “{stub_name}” for naming things. "
-                    "Please provide a [bundle]→filename_stub containing "
-                    "letters, numbers, _ or - only."
-                ).format(stub_name=self.stub_name),
-            )
-        self.stub_name += self.msystem.bundle_name_suffix
         # Extract package metadata
         substs = self.msystem.substs
         self.main_package = first_package_tmpl.format(**substs)
@@ -184,6 +169,35 @@ class NativeBundle:
 
         """
         return self._section.get("version", self.metadata.get("version", "0"))
+
+    @property
+    def stub_name(self):
+        """What to call generated files and directories.
+
+        This will be derived from the first package's name if necessary.
+        A suffix reflecting the target architecture will be appended.
+
+        """
+        stub = self._section.get("filename_stub")
+        if not stub:
+            packages_raw = self._section.get("packages")
+            if not packages_raw:
+                raise SpecificationError(
+                    "No definition of [%s]→packages "
+                    "when trying to derive the bundle’s stub_name",
+                    self._SECTION_NAME,
+                )
+            packages_raw = packages_raw.strip().split()
+            stub = packages_raw[0].format(pkg_prefix="")
+        if not re.match(r'^[\w+-]+$', stub):
+            tmpl = str(
+                "Cannot use “{stub_name}” for naming things. "
+                "Please define a [bundle]→filename_stub containing "
+                "letters, numbers, _ or - only."
+            )
+            raise ValueError(tmpl.format(stub_name=stub))
+        stub += self.msystem.bundle_name_suffix
+        return stub
 
     @property
     def packages(self):
