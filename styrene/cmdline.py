@@ -29,9 +29,75 @@ import os
 import tempfile
 import shutil
 from textwrap import dedent
+import re
 import logging
 
 logger = logging.getLogger(__name__)
+
+
+class ColorFormatter (logging.Formatter):
+    """Minimal ANSI formatter, for use with non-Windows console logging."""
+
+    # ANSI control sequences for various things:
+
+    BLACK, RED, GREEN, YELLOW, BLUE, MAGENTA, CYAN, WHITE = range(8)
+    FG = 30
+    BG = 40
+    LEVELCOL = {
+        "DEBUG": "\033[%02dm" % (FG+CYAN,),
+        "INFO": "\033[%02dm" % (FG+GREEN,),
+        "WARNING": "\033[%02dm" % (FG+MAGENTA,),
+        "ERROR": "\033[%02dm" % (FG+RED,),
+        "CRITICAL": "\033[%02d;%02dm" % (FG+RED, BG+BLACK),
+    }
+    BOLD = "\033[01m"
+    BOLDOFF = "\033[22m"
+    ITALIC = "\033[03m"
+    ITALICOFF = "\033[23m"
+    UNDERLINE = "\033[04m"
+    UNDERLINEOFF = "\033[24m"
+    RESET = "\033[0m"
+
+    # Token formatting:
+
+    @classmethod
+    def replace_bold(cls, m):
+        return cls.BOLD + m.group(0) + cls.BOLDOFF
+
+    @classmethod
+    def replace_italic(cls, m):
+        return cls.ITALIC + m.group(0) + cls.ITALICOFF
+
+    @classmethod
+    def replace_underline(cls, m):
+        return cls.UNDERLINE + m.group(0) + cls.UNDERLINEOFF
+
+    # Formatter methods:
+
+    def format(self, record):
+        record = logging.makeLogRecord(record.__dict__)
+        msg = record.msg
+        replace = self.replace_bold
+        token_formatting = [
+            (re.compile(r'%r'), replace),
+            (re.compile(r'%s'), replace),
+            (re.compile(r'%\+?[0-9.]*d'), replace),
+            (re.compile(r'%\+?[0-9.]*f'), replace),
+        ]
+        for token_re, repl in token_formatting:
+            msg = token_re.sub(repl, msg)
+        record.msg = msg
+        record.reset = self.RESET
+        record.bold = self.BOLD
+        record.boldOff = self.BOLDOFF
+        record.italic = self.ITALIC
+        record.italicOff = self.ITALICOFF
+        record.underline = self.UNDERLINE
+        record.underlineOff = self.UNDERLINEOFF
+        record.levelCol = ""
+        if record.levelname in self.LEVELCOL:
+            record.levelCol = self.LEVELCOL[record.levelname]
+        return super(ColorFormatter, self).format(record)
 
 
 # Top-level commands:
@@ -65,7 +131,22 @@ def process_spec_file(spec, options):
 
 def main():
     # Set up logging
-    logging.basicConfig(level=logging.INFO)
+    log_format = "%(levelname)s: %(name)s: %(message)s"
+    console_handler = logging.StreamHandler(stream=sys.stderr)
+    if sys.stderr.isatty():
+        log_format = (
+            "%(levelCol)s%(levelname)s: "
+            "%(bold)s%(name)s%(boldOff)s: "
+            "%(message)s%(reset)s"
+        )
+        console_formatter = ColorFormatter(log_format)
+    else:
+        console_formatter = logging.Formatter(log_format)
+    console_handler.setFormatter(console_formatter)
+    root_logger = logging.getLogger(None)
+    root_logger.addHandler(console_handler)
+    root_logger.setLevel(logging.INFO)
+
     # Parse command line args
     parser = optparse.OptionParser(
         usage="%prog [options] spec1.cfg ...",
@@ -144,6 +225,16 @@ def main():
             spec = configparser.SafeConfigParser()
             spec.read(spec_file)
         except:
-            logger.exception("Failed to load bundle spec file “%s”", spec_file)
+            logger.exception(
+                "Failed to load bundle spec file “%s”",
+                spec_file,
+            )
             sys.exit(2)
-        process_spec_file(spec, options)
+        try:
+            process_spec_file(spec, options)
+        except:
+            logger.exception(
+                "Unexpected error while processing “%s”",
+                spec_file,
+            )
+            sys.exit(2)
