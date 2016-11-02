@@ -43,8 +43,15 @@ logger = logging.getLogger(__name__)
 
 # Class defs:
 
+class SpecificationError (Exception):
+    """An error with the bundle specification."""
+    pass
+
+
 class NativeBundle:
     """Installable bundle for Win32 or Win64."""
+
+    _SECTION_NAME = "bundle"
 
     def __init__(self, spec, msystem):
         """Initializes a bundle from a specification."""
@@ -85,6 +92,16 @@ class NativeBundle:
         # Launchers
         self.launchers = []
 
+    @property
+    def _section(self):
+        """The main configuration section."""
+        if not self.spec.has_section(self._SECTION_NAME):
+            raise SpecificationError(
+                "Missing [%s] section.",
+                self._SECTION_NAME,
+            )
+        return self.spec[self._SECTION_NAME]
+
     def _init_launchers(self, distroot):
         """Initializes the launcher specifications for this bundle.
 
@@ -95,8 +112,7 @@ class NativeBundle:
         """
         spec = self.spec
         self.launchers = []
-        bundle_section = spec["bundle"]
-        launcher_names = bundle_section.get("launchers", "").strip().split()
+        launcher_names = self._section.get("launchers", "").strip().split()
         for launcher_name in launcher_names:
             logger.info("Loading launcher “%s”…", launcher_name)
 
@@ -163,9 +179,22 @@ class NativeBundle:
         return distfiles
 
     @property
+    def packages(self):
+        """The list of packages to install."""
+        packages_raw = self._section.get("packages")
+        if not packages_raw:
+            raise SpecificationError(
+                "No definition of [%s]→packages",
+                self._SECTION_NAME,
+            )
+        packages_raw = packages_raw.strip()
+        substs = self.msystem.substs
+        packages_raw = packages_raw.format(**substs)
+        return packages_raw.split()
+
+    @property
     def display_name(self):
-        s = self.spec["bundle"]
-        d = s.get("display_name", None)
+        d = self._section.get("display_name", None)
         if d:
             d = d.strip()
             if self.msystem != consts.MSYSTEM.MINGW64:
@@ -177,20 +206,20 @@ class NativeBundle:
 
     @property
     def description(self):
-        s = self.spec["bundle"]
+        s = self._section
         d = self.display_name
         d = s.get("description", self.metadata.get("description", d))
         return d.strip()
 
     @property
     def url(self):
-        s = self.spec["bundle"]
+        s = self._section
         u = "http://msys2.github.io"
         return s.get("url", self.metadata.get("url", u)).strip()
 
     @property
     def publisher(self):
-        s = self.spec["bundle"]
+        s = self._section
         p = "MSYS2"
         if "packager" in self.metadata:
             p = self.metadata.get("packager", p)
@@ -395,10 +424,8 @@ class NativeBundle:
         """Installs the packages in the bundle’s specification."""
         logger.info("Installing packages requested in the spec…")
         substs = self.msystem.substs
-        packages = self.spec.get("bundle", "packages", fallback="")
-        packages += " {pkg_prefix}win7appid"
-        packages = packages.format(**substs)
-        packages = packages.strip().split()
+        packages = list(self.packages)
+        packages.append("{pkg_prefix}win7appid".format(**substs))
         self._install_packages(root, packages, pkgdirs=pkgdirs)
 
     def _install_icons(self, root):
@@ -461,7 +488,7 @@ class NativeBundle:
 
     def _delete_surplus_files(self, root):
         """Delete unwanted files from the bundle."""
-        section = self.spec["bundle"]
+        section = self._section
         substs = self.msystem.substs
 
         nodelete_spec = section.get("nodelete", "")
