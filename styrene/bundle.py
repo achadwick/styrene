@@ -81,12 +81,6 @@ class NativeBundle:
         metadata = self._get_package_metadata(self.main_package)
         logger.info("Got metadata for %r", self.main_package)
         self.metadata = metadata
-        # Properties for templating
-        version = section.get("version", metadata.get("version", "0"))
-        major, minor = self._parse_version(version)
-        self.version = version
-        self.version_major = major
-        self.version_minor = minor
         # For NSIS file generation
         self.icon = ""
         # Launchers
@@ -177,6 +171,19 @@ class NativeBundle:
         distfiles.extend(self._write_zip_distfile(distroot, output_dir))
         distfiles.extend(self._write_nsis_distfile(distroot, output_dir))
         return distfiles
+
+    @property
+    def version(self):
+        """The bundle's version string.
+
+        The version string is normally derived from the primary
+        package's version.  It can be overridden in [bundle]→version.
+
+        As such, the value may only be meaningful after bundle metadata
+        has been collected from the installed packages.
+
+        """
+        return self._section.get("version", self.metadata.get("version", "0"))
 
     @property
     def packages(self):
@@ -565,6 +572,7 @@ class NativeBundle:
             stub_name=self.stub_name,
             version=self.version,
         )
+        major, minor = self._parse_version(self.version)
         substs = {
             "stub_name": nsis_escape(self.stub_name),
             "regname": nsis_escape(self.stub_name),
@@ -572,8 +580,8 @@ class NativeBundle:
             "bits": self.msystem.bits,
             "display_name": nsis_escape(self.display_name),
             "output_file_name": nsis_escape(installer_exe_name),
-            "version_major": int(self.version_major),
-            "version_minor": int(self.version_minor),
+            "version_major": int(major),
+            "version_minor": int(minor),
             "publisher": nsis_escape(self.publisher),
             "version": nsis_escape(self.version),
             "url": nsis_escape(self.url),
