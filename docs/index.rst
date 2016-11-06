@@ -16,6 +16,8 @@ it can be bundled with Styrene.
 
    intro
    quickstart
+   cmdline
+   bundleconf
    concepts
    output
    licenses
