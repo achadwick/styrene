@@ -125,6 +125,14 @@ def sh_escape(s):
     return s
 
 
+def c_escape(s):
+    """Escapes a string for use in a C wchar_t* constant (L"...")."""
+    s = str(s)
+    s = s.replace('\\', '\\\\')
+    s = s.replace('"', '\\"')
+    return s
+
+
 def boolify(s):
     """Lax convertsion of strings to bools."""
     s = str(s).strip()
