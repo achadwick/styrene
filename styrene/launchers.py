@@ -22,6 +22,7 @@ Ref: https://specifications.freedesktop.org/desktop-entry-spec/latest/
 """
 
 from .utils import sh_escape
+from .utils import c_escape
 from .utils import findexe
 from .utils import nsis_escape
 from .utils import native_shell
@@ -306,31 +307,44 @@ class DesktopEntry:
             logger.debug("tmpdir: %r", tmpdir)
             objects = []
 
+            with open(os.path.join(tmpdir, "config.h"), "w") as fp:
+                config_h = dedent("""
+                    #ifndef HAVE_CONFIG_H
+                    #define HAVE_CONFIG_H
+
+                    #define LAUNCHER_HELPER_SCRIPT L"{launcher_sh}"
+                    #define LAUNCHER_POSTINST L"{postinst_sh}"
+                    #define LAUNCHER_USE_HELPER {use_helper}
+
+                    const BOOL LAUNCHER_USE_TERMINAL = {use_terminal};
+                    LPCWSTR LAUNCHER_RESOLVED_EXE = L"{resolved_exe}";
+                    LPCWSTR LAUNCHER_APP_ID = L"{app_id}";
+                    LPCWSTR LAUNCHER_LOCATION_STATE_FILE = L"{state_file}";
+
+                """).format(
+                    launcher_sh=c_escape(sh_relpath),
+                    postinst_sh=c_escape(postinst_sh),
+                    use_terminal=int(self._terminal),
+                    use_helper=int(use_helper),
+                    app_id=c_escape(app_id),
+                    resolved_exe=c_escape(resolved_exe),
+                    state_file=c_escape(consts.LAUNCHER_LOCATION_STATE_FILE),
+                )
+
+                # TODO: loop here and define the command-line template
+
+                config_h += dedent("""
+                    #endif // HAVE_CONFIG_H
+                """)
+                print(config_h, file=fp)
+
             orig_c_path = os.path.join(data_dir, "launcherstub.c")
             c_basename = self._basename + ".c"
             c_path = os.path.join(tmpdir, c_basename)
             shutil.copy(orig_c_path, c_path)
             native_shell(
                 bundle.msystem,
-                (
-                    'cd "$1" && gcc -municode -std=c11 '
-                    '-DLAUNCHER_HELPER_SCRIPT=\'L"{launcher_sh}"\' '
-                    '-DLAUNCHER_POSTINST=\'L"{postinst_sh}"\' '
-                    '-DLAUNCHER_USE_TERMINAL={use_terminal} '
-                    '-DLAUNCHER_USE_HELPER={use_helper} '
-                    '-DLAUNCHER_RESOLVED_EXE=\'L"{resolved_exe}"\' '
-                    '-DLAUNCHER_APP_ID=\'L"{app_id}"\' '
-                    '-DLAUNCHER_LOCATION_STATE_FILE=\'L"{state_file}"\' '
-                    '-c "$2"'
-                ).format(
-                    launcher_sh=sh_escape(sh_relpath),
-                    postinst_sh=sh_escape(postinst_sh),
-                    use_terminal=int(self._terminal),
-                    use_helper=int(use_helper),
-                    app_id=sh_escape(app_id),
-                    resolved_exe=sh_escape(resolved_exe),
-                    state_file=consts.LAUNCHER_LOCATION_STATE_FILE,
-                ),
+                'cd "$1" && gcc -municode -std=c11 -c "$2"',
                 [tmpdir, c_basename],
             )
             o_basename = self._basename + ".o"

@@ -21,11 +21,11 @@
 #include <stdio.h>
 #include <wchar.h>
 #include <stdlib.h>
+#include "config.h"
 
 
 // Consts {{{1
 
-static const WCHAR LOCATION_STATE_FILE[] = LAUNCHER_LOCATION_STATE_FILE;
 static const WCHAR BASH_RELPATH[] = L"usr\\bin\\bash.exe";
 
 static const WCHAR CYGWIN_STYLE_MSYSTEM[] = L"MSYS2";
@@ -140,7 +140,7 @@ BOOL
 bundle_is_configured(const WCHAR *exe_dir)
 {
     BOOL configured = TRUE;
-    FILE *fp = _wfopen(LOCATION_STATE_FILE, L"r, ccs=UTF-8");
+    FILE *fp = _wfopen(LAUNCHER_LOCATION_STATE_FILE, L"r, ccs=UTF-8");
     if (! fp) {
         configured = FALSE;
     }
@@ -228,7 +228,7 @@ run_postinst_configuration_script(const WCHAR *exe_dir)
 
     // Record where the config was last run.
 
-    FILE *fp = _wfopen(LOCATION_STATE_FILE, L"w, ccs=UTF-8");
+    FILE *fp = _wfopen(LAUNCHER_LOCATION_STATE_FILE, L"w, ccs=UTF-8");
     if (! fp) {
         show_error_message_box(L"Cannot update location state file!");
         _exit(2);
@@ -237,7 +237,7 @@ run_postinst_configuration_script(const WCHAR *exe_dir)
     if (ferror(fp) || (nwritten!=wcslen(exe_dir))) {
         fclose(fp);
         show_error_message_box(L"fwrite() failed");
-        _wunlink(LOCATION_STATE_FILE);
+        _wunlink(LAUNCHER_LOCATION_STATE_FILE);
         _exit(2);
     }
     fflush(fp);
