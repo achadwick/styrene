@@ -259,10 +259,9 @@ class DesktopEntry:
 
         """
         app_id = self.get_app_id(bundle)
-        scripts_dir = os.path.join(root, consts.SCRIPTS_SUBDIR)
-        postinst_sh = os.path.join(scripts_dir, "postinst.sh")
+        postinst_sh = os.path.join(consts.SCRIPTS_SUBDIR, "postinst.sh")
         sh_basename = self._basename + ".sh"
-        sh_relpath = os.path.join(scripts_dir, sh_basename)
+        sh_relpath = os.path.join(consts.SCRIPTS_SUBDIR, sh_basename)
 
         exe_basename = self._basename + ".exe"
         final_exe_path = os.path.join(root, exe_basename)
@@ -383,6 +382,7 @@ class DesktopEntry:
 
         # And its shell counterpart
         logger.info("Installing “%s”...", sh_relpath)
+        scripts_dir = os.path.join(root, consts.SCRIPTS_SUBDIR)
         os.makedirs(scripts_dir, exist_ok=True)
         template_sh_path = os.path.join(data_dir, "launcherstub.sh")
         with open(template_sh_path, "r") as fp:
