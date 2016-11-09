@@ -321,6 +321,7 @@ class DesktopEntry:
                     LPCWSTR LAUNCHER_APP_ID = L"{app_id}";
                     LPCWSTR LAUNCHER_LOCATION_STATE_FILE = L"{state_file}";
 
+                    const WCHAR *LAUNCHER_CMDLINE_TEMPLATE[] =
                 """).format(
                     launcher_sh=c_escape(sh_relpath),
                     postinst_sh=c_escape(postinst_sh),
@@ -331,7 +332,10 @@ class DesktopEntry:
                     state_file=c_escape(consts.LAUNCHER_LOCATION_STATE_FILE),
                 )
 
-                # TODO: loop here and define the command-line template
+                config_h += "{\n"
+                for s in self._cmdline:
+                    config_h += 'L"%s",\n' % (c_escape(s),)
+                config_h += "NULL\n};\n"
 
                 config_h += dedent("""
                     #endif // HAVE_CONFIG_H
