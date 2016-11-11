@@ -325,18 +325,6 @@ wWinMain (HINSTANCE hInstance, HINSTANCE hPrevInstance,
         run_postinst_configuration_script(exe_dir);
     }
 
-    /*
-    // In case we need to test that the args the exe sees are those the 
-    // shell will get. Is passing through pCmdLine unquoted enough?
-    */
-    //for (int i=0; i < __argc; i++) {
-    //    show_error_message_box(__wargv[i]);
-    //}
-    /*
-    // Can't use CommandLineToArgvW() for this.
-    // It's too weird and buggy.
-    */
-
     // Next subprocess starts the MinGW-compiled native Win32/Win64
     // software defined in the .desktop file corresponding to this
     // launcher. First set up the environment.
@@ -369,14 +357,10 @@ wWinMain (HINSTANCE hInstance, HINSTANCE hPrevInstance,
     si.dwFlags = STARTF_TITLEISAPPID
         | STARTF_FORCEONFEEDBACK 
         | STARTF_USESHOWWINDOW;
-    si.lpTitle = LAUNCHER_APP_ID;
-    // Unsure if that'll have any effect.
-    // It's the process that bash launches that matters.
-    // Maybe its exec is smart enough to inherit si like we do?
-    // Update: seems it isn't. OK. But we *could* launch simple
-    // cmdlines for real .exe files here ourselves, and that 
-    // might allow some STARTF_TITLEISAPPID cleverness for prepackaged
-    // stuff.
+    si.lpTitle = (LPWSTR) LAUNCHER_APP_ID;
+    // STARTF_TITLEISAPPID doesn't have have any effect if bash is
+    // to be launched, but it provides a more GNOME-like experience if
+    // the thing being launched is a native .exe.
 
     WCHAR *cmdline = get_command_line(pCmdLine);
     if (! CreateProcessW(
