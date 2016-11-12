@@ -246,6 +246,107 @@ run_postinst_configuration_script(const WCHAR *exe_dir)
 
 
 /*
+ * Quote a filename argument for CreateProcessW().
+ * The return value is a newly-allocated zero-WCHAR-terminated
+ * string which must be freed after use.
+ */
+
+WCHAR *
+new_quoted_filename (WCHAR *s)
+{
+    int rlen = 0;
+    BOOL contains_spaces = FALSE;
+    for (int i=0; i<wcslen(s); ++i) {
+        if (s[i] == L'"') {
+            show_error_message_box(
+                L"Filename parameter contains double quotes. What the hell."
+                // Aren't they forbidden in Windows file names?
+            );
+            _exit(2);
+        }
+        else if (s[i] == L'\040' /* space */) {
+            contains_spaces = TRUE;
+        }
+        rlen++;
+    }
+
+    if (contains_spaces) {
+        rlen += 2;
+    }
+    rlen += 1;
+    int rbytes = rlen * sizeof(WCHAR);
+    WCHAR *r = malloc(rbytes);
+    if (! r) {
+        show_error_message_box(L"malloc() failed.");
+        _exit(4);
+    }
+    ZeroMemory(r, rbytes);
+
+    if (contains_spaces) {
+        wcscat(r, L"\"");
+    }
+    wcscat(r, s);
+    if (contains_spaces) {
+        wcscat(r, L"\"");
+    }
+
+    return r;
+}
+
+
+
+
+/*
+ * Expand a single template argument token, if needed.
+ * The result may be the template argument, or NULL,
+ * or a newly allocated string which will need to be free()d after use.
+ */
+
+WCHAR *
+expand_arg_token (WCHAR *tmpl_arg)
+{
+    WCHAR *result = tmpl_arg;
+
+    if ((wcscmp(tmpl_arg, L"%f")==0) || (wcscmp(tmpl_arg, L"%u")==0)) {
+        result = NULL;
+        if (__argc > 1) {
+            result = new_quoted_filename(__wargv[1]);
+        }
+    }
+    else if ((wcscmp(tmpl_arg, L"%F")==0) || (wcscmp(tmpl_arg, L"%U")==0)) {
+        result = NULL;
+        for (int i = 1; i < __argc; ++i) {
+            WCHAR *filename = new_quoted_filename(__wargv[i]);
+
+            int result_len = 0;
+            if (i > 1) {
+                result_len += wcslen(result);
+                result_len += 1; // space
+            }
+            result_len += wcslen(filename);
+            result_len += 1;  // trailing NULL
+
+            result = realloc(result, result_len * sizeof(WCHAR));
+            if (! result) {
+                show_error_message_box(L"realloc() failed.");
+                _exit(4);
+            }
+            if (i == 1) {
+                result[0] = L'\000';
+            }
+            else {
+                wcscat(result, L"\040");  // space
+            }
+            wcscat(result, filename);
+            free(filename);
+        }
+    }
+
+    return result;
+}
+
+
+/*
  * Get the command line to use.
  * Returns a newly allocated command line, which must be free()d
  * after use.
@@ -254,36 +355,68 @@ run_postinst_configuration_script(const WCHAR *exe_dir)
 WCHAR *
 get_command_line(PWSTR pCmdLine)
 {
-#if LAUNCHER_USE_HELPER > 0
-    // The launcher has a complex enough command line that it needs the
-    // helper bash script.
-    WCHAR cmd_base[] = L"/usr/bin/bash --login "
-        L"-c 'exec " LAUNCHER_HELPER_SCRIPT L" \"$@\"' --";
-    int cmdlen = wcslen(cmd_base) + 1 /*space*/
-               + wcslen(pCmdLine) + 1 /*NUL?*/;
-    WCHAR *cmdline = malloc(cmdlen * sizeof(WCHAR));
-    if (! cmdline) {
+    WCHAR *helper_cmd_prefix = NULL;
+    if (LAUNCHER_USE_TERMINAL) {
+        helper_cmd_prefix = L"/usr/bin/bash --login -c '"
+            L"echo \"Running $1...\"; \"$@\";"
+            L"echo \"$1 exited with status $?.\";"
+            L"echo \"Press return to close this window.\";"
+            L"read"
+            L"' --";
+    }
+    else {
+        helper_cmd_prefix = L"/usr/bin/bash --login -c "
+            L"'exec \"$@\"' "
+            L"--";
+    }
+
+    int cmd_len = 0;
+    WCHAR *cmd = NULL;
+    WCHAR *cmd_prefix = NULL;
+    WCHAR **tmpl_arg = (WCHAR **) LAUNCHER_CMDLINE_TEMPLATE;
+
+    if (LAUNCHER_USE_HELPER) {
+        cmd_prefix = helper_cmd_prefix;
+    }
+    else {
+        cmd_prefix = (WCHAR *) LAUNCHER_RESOLVED_EXE;
+        tmpl_arg ++;
+    }
+    cmd_len = wcslen(cmd_prefix) + 1 + MAX_PATH;  // avoid some realloc()s...
+
+    cmd = malloc(cmd_len * sizeof(WCHAR));
+    if (! cmd) {
         show_error_message_box(L"malloc() failed.");
         _exit(4);
     }
-    cmdline[0] = '\0';
-    wcscat(cmdline, cmd_base);
-    wcscat(cmdline, L" ");
-    wcscat(cmdline, pCmdLine);
-#else
-    // We know that it's "simple", meaning no args (for now).
-    // There may be "single arg" and "multi-arg" kinds of "simple" in
-    // future. I guess we'll cat on a requoted __argv and __argc then.
-    WCHAR *cmdline = malloc(sizeof(WCHAR) * (1+wcslen(LAUNCHER_RESOLVED_EXE)));
-    if (! cmdline) {
-        show_error_message_box(L"malloc() failed.");
-        _exit(4);
+
+    cmd[0] = L'\000';
+    wcscat(cmd, cmd_prefix);
+
+    // Concatenate the remaining args' individual expansions,
+    // separated by spaces.
+    while (*tmpl_arg != NULL) {
+        WCHAR *arg = expand_arg_token(*tmpl_arg);
+        if (arg != NULL) {
+            int new_cmd_len = wcslen(cmd) + 1 + wcslen(arg);
+            if (new_cmd_len > cmd_len) {
+                cmd_len = new_cmd_len;
+                cmd = realloc(cmd, cmd_len * sizeof(WCHAR));
+                if (! cmd) {
+                    show_error_message_box(L"realloc() failed.");
+                    _exit(4);
+                }
+            }
+            wcscat(cmd, L" ");
+            wcscat(cmd, arg);
+            if (arg != *tmpl_arg) {
+                free(arg);
+            }
+        }
+        tmpl_arg ++;
     }
-    cmdline[0] = '\0';
-    wcscat(cmdline, LAUNCHER_RESOLVED_EXE);
-    // no args yet.
-#endif
-    return cmdline;
+
+    return cmd;
 }
 
 

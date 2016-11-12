@@ -21,7 +21,6 @@ Ref: https://specifications.freedesktop.org/desktop-entry-spec/latest/
 
 """
 
-from .utils import sh_escape
 from .utils import c_escape
 from .utils import findexe
 from .utils import nsis_escape
@@ -261,8 +260,6 @@ class DesktopEntry:
         """
         app_id = self.get_app_id(bundle)
         postinst_sh = os.path.join(consts.SCRIPTS_SUBDIR, "postinst.sh")
-        sh_basename = self._basename + ".sh"
-        sh_relpath = os.path.join(consts.SCRIPTS_SUBDIR, sh_basename)
 
         exe_basename = self._basename + ".exe"
         final_exe_path = os.path.join(root, exe_basename)
@@ -272,34 +269,48 @@ class DesktopEntry:
             consts.PACKAGE_DATA_SUBDIR,
         )
 
-        # Does the launcher need to use a helper script?
-        # Simplest case is a simple .exe launcher that can be found now.
+        # Does the launcher need to invoke bash?
         use_helper = True
         resolved_exe = ""
-        logger.info("%s: CMDLINE: %r", self._basename, self._cmdline)
-        if len(self._cmdline) == 1:
-            prefix = os.path.join(root, bundle.msystem.subdir)
-            exe = self._cmdline[0]
-            exe, args = self._resolve_exe(prefix)
+        logger.debug("%s: cmdline: %r", self._basename, self._cmdline)
+        prefix = os.path.join(root, bundle.msystem.subdir)
+        exe = self._cmdline[0]
+        exe, args = self._resolve_exe(prefix)
+        logger.debug(
+            "%s: resolved exe: %r, args: %r",
+            self._basename, exe, args,
+        )
+        if not self._terminal:
             if (exe is not None) and (exe.lower().endswith(".exe")):
-                if len(args) == 0:
-                    use_helper = False
-                    resolved_exe = exe
+                use_helper = False
+                resolved_exe = exe
 
         if not use_helper:
             logger.info(
-                "Launcher %s directly invokes “%s” (it's simple enough!)",
+                "Launcher %s will directly invoke “%s”",
                 self._basename,
                 resolved_exe,
             )
+        elif self._terminal:
+            logger.info(
+                "Launcher %s will use bash to invoke %r and then wait "
+                "because %s specifies “Terminal: true”.",
+                self._basename,
+                self._cmdline,
+                "%s.desktop" % (self._basename,),
+            )
         else:
             logger.warning(
-                "Launcher %s needs to use the helper script.",
+                "Launcher %s needs to use bash to launch %r "
+                "despite %s being “Terminal: false”.",
                 self._basename,
+                self._cmdline,
+                "%s.desktop" % (self._basename,),
             )
             logger.info(
-                "It may be possible to simplify %s’s Exec line using an "
-                "override. The user experience will be better if you can.",
+                "It may be possible to override %s’s Exec line "
+                "so that it launches a .exe for the main process. "
+                "The user experience will be slightly better if you can.",
                 self._basename,
             )
 
@@ -312,7 +323,6 @@ class DesktopEntry:
                     #ifndef HAVE_CONFIG_H
                     #define HAVE_CONFIG_H
 
-                    #define LAUNCHER_HELPER_SCRIPT L"{launcher_sh}"
                     #define LAUNCHER_POSTINST L"{postinst_sh}"
                     #define LAUNCHER_USE_HELPER {use_helper}
 
@@ -323,7 +333,6 @@ class DesktopEntry:
 
                     const WCHAR *LAUNCHER_CMDLINE_TEMPLATE[] =
                 """).format(
-                    launcher_sh=c_escape(sh_relpath),
                     postinst_sh=c_escape(postinst_sh),
                     use_terminal=int(self._terminal),
                     use_helper=int(use_helper),
@@ -397,29 +406,6 @@ class DesktopEntry:
             assert os.path.exists(exe_path)
             shutil.copy(exe_path, final_exe_path)
         assert os.path.exists(final_exe_path)
-
-        # And its shell counterpart
-        logger.info("Installing “%s”...", sh_relpath)
-        scripts_dir = os.path.join(root, consts.SCRIPTS_SUBDIR)
-        os.makedirs(scripts_dir, exist_ok=True)
-        template_sh_path = os.path.join(data_dir, "launcherstub.sh")
-        with open(template_sh_path, "r") as fp:
-            template_sh = fp.read()
-        sh_vars = dict(
-            LAUNCHER_BASENAME=self._basename,
-            LAUNCHER_EXEC=self._exec,
-            LAUNCHER_USE_TERMINAL=(self._terminal and "true" or "false"),
-            LAUNCHER_LOCATION_STATE_FILE=consts.LAUNCHER_LOCATION_STATE_FILE,
-        )
-        sh_vars = "\n".join([
-            "%s='%s'" % (k, sh_escape(v))
-            for (k, v) in sh_vars.items()
-        ])
-        sh = template_sh.replace("##LAUNCHER_VARS##", sh_vars)
-
-        sh_path = os.path.join(root, sh_relpath)
-        with open(sh_path, "w") as fp:
-            fp.write(sh)
 
     def _resolve_exe(self, prefix):
         """Resolves the 1st element of self._cmdline to a Windows subpath.
