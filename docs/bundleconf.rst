@@ -273,20 +273,18 @@ Styrene follows these rules whan making its ``.exe`` launchers:
    what will be the bundle's ``$PREFIX\bin`` after deployment
 
 2. If the program is a .exe,
-   and the ``exec`` command line isn't too complex,
    the binary launcher will try to call it directly
-   with `StartProcess()`_, having done any argument expansion needed.
+   with `CreateProcessW()`_, having done any argument expansion needed.
 
-3. More complex command lines are passed to a bash helper script,
-   which is run with bash.
+3. More complex command lines are passed to the MSYS2 bash.
 
-Using *StartProcess()* directly on an executable
+Using *CreateProcessW()* directly on an executable
 makes the user experience nicer.
 Apps will be pinnable
 (they will be assigned the same appid as start menu .lnk shortcuts),
 and Styrene will hide any CMD window associated with the app sensibly.
 
-Styrene launchers will eventually respect the following field codes:
+Styrene launchers respect the following field codes:
 
 %f
     A single file name.
@@ -308,10 +306,11 @@ terminal
         terminal = true
 
 If this boolean value is set to true,
-it forces the launcher to always use the bash helper script.
-Bash will be launched in a CMD window.
+it forces the launcher to invoke the command via bash
+in a visible CMD window.
+The user will be asked to press return when the command has exited.
 
 .. _.INI: https://en.wikipedia.org/wiki/INI_file
 .. _configparser: https://docs.python.org/3/library/configparser.html
 .. _Desktop Entry Specification: https://specifications.freedesktop.org/desktop-entry-spec/latest/
-.. _StartProcess(): https://msdn.microsoft.com/en-us/library/windows/desktop/ms682425(v=vs.85).aspx
+.. _CreateProcessW(): https://msdn.microsoft.com/en-us/library/windows/desktop/ms682425(v=vs.85).aspx
