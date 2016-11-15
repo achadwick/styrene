@@ -24,7 +24,6 @@ import pyalpm
 from .launchers import DesktopEntry
 from .utils import str2key
 from .utils import nsis_escape
-from .utils import native_shell
 from .utils import winsafe_filename
 from . import consts
 
@@ -53,12 +52,12 @@ class NativeBundle:
 
     _SECTION_NAME = "bundle"
 
-    def __init__(self, spec, msystem):
+    def __init__(self, spec):
         """Initializes a bundle from a specification."""
         super().__init__()
         self.spec = spec
         #: The target architecture, prefixes etc.
-        self.msystem = consts.MSYSTEM(msystem)
+        self.msystem = consts.MSYSTEM.from_environ()
         #: Collected metadata, only useful after package installation.
         self.metadata = {}
         self.icon = ""
@@ -691,9 +690,8 @@ class NativeBundle:
         nsi_file_path = os.path.join(output_dir, nsi_file_basename)
         with open(nsi_file_path, "w") as fp:
             fp.write(nsis)
-        native_shell(
-            self.msystem,
-            'makensis.exe -V3 "$1"', [nsi_file_path],
+        subprocess.check_call(
+            ["makensis.exe", "-V3", nsi_file_path],
             cwd=output_dir,
         )
         installer_exe_path = os.path.join(output_dir, installer_exe_name)

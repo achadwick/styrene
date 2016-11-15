@@ -104,28 +104,20 @@ class ColorFormatter (logging.Formatter):
 
 def process_spec_file(spec, options):
     """Prepare the bundle as specified in the spec."""
-    msystems = []
-    if options.win64:
-        msystems.append(consts.MSYSTEM.MINGW64)
-    if options.win32:
-        msystems.append(consts.MSYSTEM.MINGW32)
-    if not msystems:
-        logger.warn("Nothing to do")
-    for msystem in msystems:
-        bundle = NativeBundle(spec, msystem)
-        output_dir = options.output_dir
-        if not output_dir:
-            output_dir = os.getcwd()
-            with tempfile.TemporaryDirectory() as tmp_dir:
-                written = bundle.write_distributables(tmp_dir, options)
-                for distfile in written:
-                    distfile_final = os.path.join(
-                        output_dir,
-                        os.path.basename(distfile),
-                    )
-                    shutil.copy(distfile, distfile_final)
-        else:
-            bundle.write_distributables(output_dir, options)
+    bundle = NativeBundle(spec)
+    output_dir = options.output_dir
+    if not output_dir:
+        output_dir = os.getcwd()
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            written = bundle.write_distributables(tmp_dir, options)
+            for distfile in written:
+                distfile_final = os.path.join(
+                    output_dir,
+                    os.path.basename(distfile),
+                )
+                shutil.copy(distfile, distfile_final)
+    else:
+        bundle.write_distributables(output_dir, options)
 
 
 # Startup:
@@ -196,20 +188,6 @@ def main():
         help="where to store output, created if needed",
         metavar="DIR",
         default=None,
-    )
-    parser.add_option(
-        "--no-win64",
-        help="Don't build 64-bit native bundles.",
-        action="store_false",
-        default=True,
-        dest="win64",
-    )
-    parser.add_option(
-        "--no-win32",
-        help="Don't build 32-bit native bundles.",
-        action="store_false",
-        default=True,
-        dest="win32",
     )
     parser.add_option(
         "-p", "--pkg-dir",

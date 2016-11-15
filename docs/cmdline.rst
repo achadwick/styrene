@@ -11,6 +11,13 @@ by bundling together MSYS2 packages.
 
 Usage
 -----
+
+Currently, styrene is launched from a wrapper script.
+If run from an MSYS environment,
+it will try to build for both MINGW32 and MINGW64 environments.
+If launched from one of the MINGWxx environments,
+it will build for that system only.
+
 1. ::
 
     ./styrene.sh --help
@@ -34,8 +41,6 @@ Options
 --debug               Log lengthy debugging information.
 -o DIR, --output-dir=DIR   Where to store output.
                            The folder ``DIR`` will be created if needed.
---no-win64            Don't build 64-bit native bundles.
---no-win32            Don't build 32-bit native bundles.
 -p DIR, --pkg-dir=DIR   Preferentially use package files from ``DIR``.
 
 Normally a temp directory is used for building,
@@ -97,13 +102,6 @@ This allows you to examine the contents and run the launchers
 from inside the working tree.
 This is a good way to test some aspects of your bundle
 without installing it.
-
-::
-
-    ./styrene.sh --no-win32 gtk3-examples.cfg
-
-If you don't want to build outputs for a particular architecture,
-you can do that too.
 
 ::
 

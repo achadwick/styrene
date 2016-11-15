@@ -20,7 +20,6 @@
 
 import re
 import os.path
-import subprocess
 import logging
 
 logger = logging.getLogger(__name__)
@@ -51,27 +50,6 @@ def winsafe_filename(s):
     s = re.sub(r'[\000-\037<>:"/\\|?*]', '_', s.strip())
     s = re.sub(r'^(CON|PRN|AUX|COM\d|LPT\d)$', r'_\1', s, flags=re.I)
     return s
-
-
-def native_shell(msystem, script, args, cwd=None):
-    """Run a script in an appropriate MSYSTEM login shell (bash -c)
-
-    :param consts.MSYSTEM msystem: Value for the MSYSTEM env var.
-    :param str script: Script to be passed to "bash -c"
-    :param list args: Arguments to be passed to the script.
-    :param str cwd: Directory in which to run, in Cygwin form.
-
-    """
-    env = {
-        "MSYSTEM": msystem.value,
-        "HOME": "/",
-    }
-    cmd = ["/usr/bin/bash", "--login", "-c", script]
-    if args:
-        cmd.append("--")
-        cmd.extend(args)
-    logger.debug("%s: running %r in %s", msystem, cmd, cwd)
-    subprocess.check_call(cmd, cwd=cwd, env=env)
 
 
 def uniq(self, seq):

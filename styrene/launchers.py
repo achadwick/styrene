@@ -24,7 +24,6 @@ Ref: https://specifications.freedesktop.org/desktop-entry-spec/latest/
 from .utils import c_escape
 from .utils import findexe
 from .utils import nsis_escape
-from .utils import native_shell
 from .utils import boolify
 from .utils import winsafe_filename
 from . import consts
@@ -37,6 +36,7 @@ import struct
 import tempfile
 import shutil
 from textwrap import dedent
+import subprocess
 
 import logging
 logger = logging.getLogger(__name__)
@@ -355,10 +355,9 @@ class DesktopEntry:
             c_basename = self._basename + ".c"
             c_path = os.path.join(tmpdir, c_basename)
             shutil.copy(orig_c_path, c_path)
-            native_shell(
-                bundle.msystem,
-                'cd "$1" && gcc -municode -std=c11 -c "$2"',
-                [tmpdir, c_basename],
+            subprocess.check_call(
+                ["gcc", "-municode", "-std=c11", "-c", c_basename],
+                cwd=tmpdir,
             )
             o_basename = self._basename + ".o"
             o_path = os.path.join(tmpdir, o_basename)
@@ -381,10 +380,8 @@ class DesktopEntry:
                     with open(ico_rc_path, "w") as rc_fp:
                         print('1 ICON "%s"' % (ico_basename,), file=rc_fp)
                     try:
-                        native_shell(
-                            bundle.msystem,
-                            'cd "$1" && windres "$2" "$3"',
-                            [tmpdir, ico_rc, ico_o],
+                        subprocess.check_call(
+                            ["windres", ico_rc, ico_o],
                             cwd=tmpdir,
                         )
                     except:
@@ -396,11 +393,12 @@ class DesktopEntry:
                         if os.path.exists(ico_o_path):
                             objects.append(ico_o)
 
-            native_shell(
-                bundle.msystem,
-                'cd "$1" && shift && '
-                'gcc -municode -std=c11 -mwindows -o "$@"',
-                [tmpdir, exe_basename] + objects,
+            link_cmd = ["gcc", "-municode", "-std=c11", "-mwindows", "-o"]
+            link_cmd.append(exe_basename)
+            link_cmd.extend(objects)
+            subprocess.check_call(
+                link_cmd,
+                cwd=tmpdir,
             )
             exe_path = os.path.join(tmpdir, exe_basename)
             assert os.path.exists(exe_path)

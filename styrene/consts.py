@@ -17,6 +17,11 @@
 
 
 import enum
+import os
+import logging
+
+logger = logging.getLogger(__name__)
+
 
 #: Where to store generated .ico files (relative to bundle root)
 ICO_FILE_SUBDIR = "_icons"
@@ -60,6 +65,16 @@ class MSYSTEM (enum.Enum):
     # Class convenience methods:
 
     @classmethod
+    def from_environ(cls):
+        """Get the MSYSTEM enum member for the current environment."""
+        msystem_str = os.environ.get("MSYSTEM")
+        try:
+            return cls.from_str(msystem_str)
+        except ValueError:
+            logger.error("Not running in the correct MSYS2 environment.")
+            raise
+
+    @classmethod
     def from_str(cls, s):
         """Get the MSYSTEM enum member for a string. Case-insensitive."""
         s = str(s)
@@ -71,10 +86,6 @@ class MSYSTEM (enum.Enum):
             "Unknown MSYSTEM value. Valid strings: %r",
             [m.value for m in cls.__members__.values()],
         )
-
-    @classmethod
-    def get_default(cls):
-        return cls.MINGW64
 
     # Member properties:
 
