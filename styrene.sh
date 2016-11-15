@@ -13,7 +13,9 @@ if test "x$MSYSTEM" = "xMSYS"; then
     for s in MINGW64 MINGW32; do
         echo >&2 "+++ Running $PACKAGE in a $s login shell..."
         cmd="$PYTHON $PACKAGE"' "$@"'
-        MSYSTEM=$s "$BASH" -c "$cmd" -- "$@"
+        MSYSTEM=$s \
+        CHERE_INVOKING=1 \
+            "$BASH" --login -c "$cmd" -- "$@"
     done
 else
     echo >&2 "+++ Running $PACKAGE directly..."
