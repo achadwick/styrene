@@ -42,6 +42,8 @@ Options
 -o DIR, --output-dir=DIR   Where to store output.
                            The folder ``DIR`` will be created if needed.
 -p DIR, --pkg-dir=DIR   Preferentially use package files from ``DIR``.
+--no-exe    Do not write the installer .exe output file.
+--no-zip    Do not write the standalone .zip output file.
 
 Normally a temp directory is used for building,
 and the output distributables are then copied into the current directory.
@@ -52,6 +54,10 @@ no temp directory will be made.
 The output dir will be created if it doesn't exist,
 and all output will be retained there, not copied out.
 The temporary bundle tree is kept too, for inspection and testing.
+
+If you specify both ``--no-exe`` and ``--no-zip``
+without also specififying a ``--output-dir`` to keep the bundle tree in,
+styrene will take no action.
 
 Not counting any retained bundle trees, styrene generates two kinds of
 bundle files for distribution: installer executables, amd standalone

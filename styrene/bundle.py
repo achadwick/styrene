@@ -146,8 +146,10 @@ class NativeBundle:
         self._install_postinst_scripts(distroot)
 
         distfiles = []
-        distfiles.extend(self._write_zip_distfile(distroot, output_dir))
-        distfiles.extend(self._write_nsis_distfile(distroot, output_dir))
+        if options.build_exe:
+            distfiles.extend(self._write_zip_distfile(distroot, output_dir))
+        if options.build_zip:
+            distfiles.extend(self._write_nsis_distfile(distroot, output_dir))
         return distfiles
 
     @property

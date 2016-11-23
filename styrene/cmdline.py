@@ -19,7 +19,6 @@
 """Launching from the command line."""
 
 from .bundle import NativeBundle
-from . import consts
 
 import optparse
 import configparser
@@ -107,6 +106,18 @@ def process_spec_file(spec, options):
     bundle = NativeBundle(spec)
     output_dir = options.output_dir
     if not output_dir:
+        if not (options.build_zip or options.build_exe):
+            logger.warning(
+                "Both --no-zip and --no-exe were specified, with no "
+                "--output-dir to write and keep the remaining "
+                "intermediate files in."
+            )
+            logger.warning(
+                "This means that the bundle tree would be "
+                "deleted as soon as it was created, "
+                "so I'm doing nothing."
+            )
+            return
         output_dir = os.getcwd()
         with tempfile.TemporaryDirectory() as tmp_dir:
             written = bundle.write_distributables(tmp_dir, options)
@@ -196,6 +207,20 @@ def main():
         action="append",
         dest="pkgdirs",
         default=[],
+    )
+    parser.add_option(
+        "--no-exe",
+        help="do not build the installer .exe output",
+        action="store_false",
+        dest="build_exe",
+        default=True,
+    )
+    parser.add_option(
+        "--no-zip",
+        help="do not create the standalone .zip output",
+        action="store_false",
+        dest="build_zip",
+        default=True,
     )
     options, args = parser.parse_args(sys.argv[1:])
     if not len(args):
