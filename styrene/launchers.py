@@ -37,6 +37,7 @@ import tempfile
 import shutil
 from textwrap import dedent
 import subprocess
+import xml.etree.ElementTree as ET
 
 import logging
 logger = logging.getLogger(__name__)
@@ -149,7 +150,7 @@ class DesktopEntry:
             ("_exec", "Exec", str),
             ("_cmdline", "Exec", self._tokenize_cmdline),
             ("_terminal", "Terminal", boolify),
-            ("_mimetypes", "Mimetypes", self._parse_mimetypes),
+            ("_mimetypes", "MimeType", self._parse_mimetypes),
         ]
         for attr, key, conv in populate:
             value = caseinsens_mapping.get(key.casefold())
@@ -504,6 +505,60 @@ class DesktopEntry:
     def get_postinst_cmd_fragment(self, root, bundle):
         """Fetch a script fragment for postinst.cmd. Currently unused."""
         return ""
+
+    def get_extensions(self, root, bundle):
+        """Gets the file name extensions this launcher can handle.
+
+        :param str root: Bundle root directory.
+        :param bundle.NativeBundle: The bundle tree to search.
+        :returns: Two lists, ``(primary_exts, secondary_exts)``
+        :rtype: tuple
+
+        Either of the returned lists may be empty. The primary list
+        should be considered the native file types for the app; the
+        secondary list details files which it may also be able to open
+        because they are derivative types of file.
+
+        """
+        if not self._mimetypes:
+            return []
+
+        simple_glob_pattern_re = re.compile(r"^\*\.([a-zA-Z0-9]+)$")
+
+        primary_exts = []
+        secondary_exts = []
+        prefix = os.path.join(root, bundle.msystem.subdir)
+        ns = {
+            "smi": "http://www.freedesktop.org/standards/shared-mime-info",
+        }
+        smi_file_patt = os.path.join(prefix, "share/mime/packages/*.xml")
+        for smi_file_name in glob.glob(smi_file_patt):
+            smi_docroot = ET.parse(smi_file_name)
+            for t in smi_docroot.findall("smi:mime-type", ns):
+                t_matched = False
+                exts = None
+                if t.get("type", None) in self._mimetypes:
+                    t_matched = True
+                    exts = primary_exts
+                else:
+                    for mimetype in self._mimetypes:
+                        p = ".//smi:sub-class-of[@type='%s']" % (mimetype,)
+                        if t.findall(p, ns):
+                            t_matched = True
+                            exts = secondary_exts
+                            break
+                if not t_matched:
+                    continue
+                assert exts is not None
+                for g in t.findall("smi:glob", ns):
+                    g_patt = g.get("pattern", "")
+                    match = simple_glob_pattern_re.match(g_patt)
+                    if not match:
+                        continue
+                    ext = match.group(1)
+                    if ext not in exts:
+                        exts.append(ext)
+        return (primary_exts, secondary_exts)
 
 
 # Helper funcs:
