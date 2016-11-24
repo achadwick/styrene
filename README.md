@@ -35,13 +35,26 @@ it can be bundled with Styrene.
 
 4. [Read the docs](http://styrene.readthedocs.io) to find out more.
 
+## Contributing
+
+This project has a [Code of Conduct][ccc] for its contributors.
+By participating in this project, you agree to abide by its terms.
+
 ## Licenses
 
-* [GPLv3](COPYING) for the tool itself.
+Styrene’s code is licensed as follows:
+
+* [GPLv3](COPYING) or later for the tool itself.
 * [CC0][cc0] for code templates and generated code inside bundles.
 
 See the Styrene [licensing policy][pol] in the documentation
 for details of why we make this split.
 
+Other licenses:
+
+* The CoC text is licensed as [CC BY 4.0][ccby40].
+
 [cc0]: https://creativecommons.org/publicdomain/zero/1.0/
 [pol]: docs/licenses.md
+[ccc]: CODE_OF_CONDUCT.md
+[ccby40]: https://creativecommons.org/licenses/by/4.0/

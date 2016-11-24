@@ -40,3 +40,14 @@ with only very minimal configuration.
 * Installer makes start menu shortcuts
 * Installer registers the bundle's uninstall.exe correctly
 * Installed apps can normally be pinned to the taskbar
+
+## Contributing
+
+It’s early days yet. However if this project takes off,
+it will grow with respect and inclusivity.
+
+Please note that this project is released with a
+[Contributor Code of Conduct][ccc]. By participating in this project,
+you agree to abide by its terms.
+
+[ccc]: https://github.com/achadwick/styrene/blob/master/CODE_OF_CONDUCT.md
