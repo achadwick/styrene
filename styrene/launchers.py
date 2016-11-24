@@ -75,6 +75,8 @@ class DesktopEntry:
         self._icon = ""
         self._mimetypes = []
         self._terminal = False
+        self._extinfo_cache_for = None
+        self._extinfo_cache = ([], [])
 
     def __repr__(self):
         return "<DesktopEntry %r>" % (self._basename,)
@@ -485,7 +487,7 @@ class DesktopEntry:
             echo "Setting appid for {sc_folder}/{sc_name}.lnk ..."
             if test "x$START_MENU_PROGRAMS" != "x"; then
                 if ! test -f "$shortcut"; then
-                    echo "ERROR: shortcut not installed: $shortcut"
+                    echo "warning: shortcut not installed: $shortcut"
                 elif ! test -f "$win7appid"; then
                     echo "ERROR: missing binary: $win7appid"
                 else
@@ -506,12 +508,12 @@ class DesktopEntry:
         """Fetch a script fragment for postinst.cmd. Currently unused."""
         return ""
 
-    def get_extensions(self, root, bundle):
+    def _get_extensions(self, root, bundle):
         """Gets the file name extensions this launcher can handle.
 
         :param str root: Bundle root directory.
         :param bundle.NativeBundle: The bundle tree to search.
-        :returns: Two lists, ``(primary_exts, secondary_exts)``
+        :returns: Two lists, ``(primary_extinfo, secondary_extinfo)``
         :rtype: tuple
 
         Either of the returned lists may be empty. The primary list
@@ -519,9 +521,16 @@ class DesktopEntry:
         secondary list details files which it may also be able to open
         because they are derivative types of file.
 
+        Each of the lists has elements ``(ext, desc)``, where ext is the
+        filename extension without a leading dot, and desc is a
+        human-readable description of the file type.
+
         """
         if not self._mimetypes:
-            return []
+            return ([], [])
+
+        if self._extinfo_cache_for == (root, bundle):
+            return self._extinfo_cache
 
         simple_glob_pattern_re = re.compile(r"^\*\.([a-zA-Z0-9]+)$")
 
@@ -537,7 +546,8 @@ class DesktopEntry:
             for t in smi_docroot.findall("smi:mime-type", ns):
                 t_matched = False
                 exts = None
-                if t.get("type", None) in self._mimetypes:
+                t_type = t.get("type", None)
+                if t_type in self._mimetypes:
                     t_matched = True
                     exts = primary_exts
                 else:
@@ -550,6 +560,11 @@ class DesktopEntry:
                 if not t_matched:
                     continue
                 assert exts is not None
+                desc = t_type
+                for c in t.findall("smi:comment", ns):
+                    if c.get("xml:lang") is None:  # FIXME: i18n generally
+                        desc = c.text.strip()
+                        break
                 for g in t.findall("smi:glob", ns):
                     g_patt = g.get("pattern", "")
                     match = simple_glob_pattern_re.match(g_patt)
@@ -557,8 +572,58 @@ class DesktopEntry:
                         continue
                     ext = match.group(1)
                     if ext not in exts:
-                        exts.append(ext)
-        return (primary_exts, secondary_exts)
+                        exts.append((ext, desc))
+
+        result = (primary_exts, secondary_exts)
+        self._extinfo_cache_for = (root, bundle)
+        self._extinfo_cache = result
+        return result
+
+    def get_file_assoc_nsis(self, root, bundle, ext_map):
+        exts1, exts2 = self._get_extensions(root, bundle)
+        nsis = ""
+        for optflag, exts in [("", exts1), ("/o", exts2)]:
+            for (ext, desc) in exts:
+                if ext in ext_map:
+                    continue
+                ext_map[ext] = self
+
+                frag = dedent(r"""
+                    Section {optflag} "Open *.{ext} with {name}"
+                        !insertmacro FileAssoc "{ext}" \
+                            "{basename}.{ext}" \
+                            "{desc}" \
+                            "$INSTDIR\{basename}.exe,0" \
+                            "Open with {name}" \
+                            "$INSTDIR\{basename}.exe $\"%1$\""
+                    SectionEnd
+                """).format(
+                    optflag=optflag,
+                    ext=nsis_escape(ext),
+                    name=nsis_escape(self._name),
+                    basename=nsis_escape(self._basename),
+                    desc=nsis_escape(desc),
+                )
+                nsis += frag
+        return nsis
+
+    def get_file_unassoc_nsis(self, root, bundle, ext_map):
+        exts1, exts2 = self._get_extensions(root, bundle)
+        exts = list(exts1) + list(exts2)
+        nsis = "Section \"un.AssocFiles.{basename}\"\n".format(
+            basename=nsis_escape(self._basename),
+        )
+        for (ext, desc) in exts:
+            if ext_map.get(ext) is not self:
+                continue
+            nsis += dedent("""
+                !insertmacro FileUnAssoc "{ext}" "{basename}.{ext}"
+            """).format(
+                ext=nsis_escape(ext),
+                basename=nsis_escape(self._basename),
+            )
+        nsis += "SectionEnd\n\n"
+        return nsis
 
 
 # Helper funcs:

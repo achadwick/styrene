@@ -652,17 +652,24 @@ class NativeBundle:
             "icon_fragment": "",
             "launcher_install_fragments": "",
             "launcher_uninstall_fragments": "",
+            "launcher_assoc_fragments": "",
+            "launcher_unassoc_fragments": "",
             "sc_folder": nsis_escape(winsafe_filename(self.display_name)),
             "bundle_size": int(round(bundle_size)),
         }
 
         # Conditional fragments
+
         if self.icon:
             frag = dedent("""
                 Icon "%(stub_name)s\%(icons_subdir)s\%(icon)s.ico"
+                UninstallIcon "%(stub_name)s\%(icons_subdir)s\%(icon)s.ico"
             """) % substs
             substs["icon_fragment"] = frag
+
         if self.launchers:
+
+            # Shortcuts
             ufrag = dedent(r"""
                 RMDIR /r "$SMPROGRAMS\%(sc_folder)s"
             """) % substs
@@ -676,6 +683,31 @@ class NativeBundle:
             substs["launcher_install_fragments"] = ifrag
             substs["launcher_uninstall_fragments"] = ufrag
 
+            # File associations
+            # Only one per extension even if lots of launchers claim it.
+            ifrag = ""
+            ufrag = ""
+            ext_map = {}
+            for launcher in self.launchers:
+                ifrag += launcher.get_file_assoc_nsis(root, self, ext_map)
+            for launcher in self.launchers:
+                ufrag += launcher.get_file_unassoc_nsis(root, self, ext_map)
+            if ext_map:
+                ifrag += dedent("""
+                    Section "Update filename associations"
+                        SectionIn RO
+                        !insertmacro UpdateFileAssocs
+                    SectionEnd
+                """)
+                ufrag += dedent("""
+                    Section "un.Update filename associations"
+                        SectionIn RO
+                        !insertmacro UpdateFileAssocs
+                    SectionEnd
+                """)
+            substs["launcher_assoc_fragments"] = ifrag
+            substs["launcher_unassoc_fragments"] = ufrag
+
         # Load and subst the template file
         nsi_template_file = os.path.join(
             os.path.dirname(__file__),
@@ -686,12 +718,25 @@ class NativeBundle:
             nsis = fp.read()
         nsis = nsis % substs
 
-        # Run makensis
+        # Run makensis with a suitable config and includes
+
         nsi_file_basename = "{stub_name}.nsi".format(**substs)
         logger.info("Writing “%s”…", nsi_file_basename)
         nsi_file_path = os.path.join(output_dir, nsi_file_basename)
         with open(nsi_file_path, "w") as fp:
             fp.write(nsis)
+
+        nsh_file_basenames = ["assoc.nsh"]
+        for nsh_file_basename in nsh_file_basenames:
+            logger.info("Copying “%s”…", nsh_file_basename)
+            nsh_src_file_path = os.path.join(
+                os.path.dirname(__file__),
+                consts.PACKAGE_DATA_SUBDIR,
+                nsh_file_basename,
+            )
+            nsh_targ_file_path = os.path.join(output_dir, nsh_file_basename)
+            shutil.copy(nsh_src_file_path, nsh_targ_file_path)
+
         subprocess.check_call(
             ["makensis.exe", "-V3", "-INPUTCHARSET", "UTF8", nsi_file_path],
             cwd=output_dir,
