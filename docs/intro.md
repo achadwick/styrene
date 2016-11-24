@@ -7,6 +7,7 @@ It repacks MSYS2 software into neat bundles that are nicer for your users,
 and easier for you to distribute.
 If a package containing your app is already available in MSYS2,
 it can be bundled with Styrene.
+You can also bundle packages you build yourself.
 
 [MSYS2][m2] is a large modern distribution of binary software for Windows.
 Its contents are mostly ported from the free/Libré/Open Source software world.
@@ -37,6 +38,7 @@ with only very minimal configuration.
 * Converts package versions, descriptions and other metadata fields
 * Converts your app's FreeDesktop .desktop files to launchers
 * Makes .EXE launchers with icons
+* Optionally installs default file associations
 * Installer makes start menu shortcuts
 * Installer registers the bundle's uninstall.exe correctly
 * Installed apps can normally be pinned to the taskbar
