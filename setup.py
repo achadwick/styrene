@@ -12,7 +12,7 @@ if os.environ.get("MSYSTEM") != "MSYS":
 
 setup(
     name="Styrene",
-    version="0.1.0",
+    version="0.1.1",
     description=(
         "Tool to make usable app bundles for regular Windows users "
         "out of MSYS2 binary packages"
@@ -38,7 +38,7 @@ bells and whistles, and as bare-bones portable .zip files.
     author="Andrew Chadwick",
     author_email="a.t.chadwick@gmail.com",
     url="https://github.com/achadwick/styrene",
-    scripts=["scripts/styrene.py"],
+    scripts=["scripts/styrene"],
     packages=["styrene"],
     package_data={'styrene': ['data/*']},
     classifiers=(
