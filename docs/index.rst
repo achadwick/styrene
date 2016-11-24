@@ -21,4 +21,5 @@ You can also bundle packages you build yourself.
    bundleconf
    concepts
    output
+   install
    licenses
