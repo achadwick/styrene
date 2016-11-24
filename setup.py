@@ -12,7 +12,7 @@ if os.environ.get("MSYSTEM") != "MSYS":
 
 setup(
     name="Styrene",
-    version="0.1",
+    version="0.1.0",
     description=(
         "Tool to make usable app bundles for regular Windows users "
         "out of MSYS2 binary packages"
