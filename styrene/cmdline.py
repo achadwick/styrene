@@ -170,6 +170,8 @@ def main():
             and all output will be retained there, not copied out.
             The temporary bundle tree is kept too,
             for inspection and testing.
+
+            More: http://styrene.readthedocs.io/
         """).strip(),
     )
     parser.add_option(
