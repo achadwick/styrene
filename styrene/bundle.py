@@ -693,7 +693,7 @@ class NativeBundle:
         with open(nsi_file_path, "w") as fp:
             fp.write(nsis)
         subprocess.check_call(
-            ["makensis.exe", "-V3", nsi_file_path],
+            ["makensis.exe", "-V3", "-INPUTCHARSET", "UTF8", nsi_file_path],
             cwd=output_dir,
         )
         installer_exe_path = os.path.join(output_dir, installer_exe_name)
