@@ -147,9 +147,9 @@ class NativeBundle:
 
         distfiles = []
         if options.build_exe:
-            distfiles.extend(self._write_zip_distfile(distroot, output_dir))
-        if options.build_zip:
             distfiles.extend(self._write_nsis_distfile(distroot, output_dir))
+        if options.build_zip:
+            distfiles.extend(self._write_zip_distfile(distroot, output_dir))
         return distfiles
 
     @property
