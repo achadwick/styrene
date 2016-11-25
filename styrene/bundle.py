@@ -40,6 +40,22 @@ import logging
 logger = logging.getLogger(__name__)
 
 
+# Consts:
+
+RUNTIME_DEPENDENCIES = {
+    consts.MSYSTEM.MINGW64: [
+        "mingw-w64-x86_64-gcc",
+        "mingw-w64-x86_64-nsis",
+        "mingw-w64-x86_64-binutils",
+    ],
+    consts.MSYSTEM.MINGW64: [
+        "mingw-w64-x86_64-gcc",
+        "mingw-w64-x86_64-nsis",
+        "mingw-w64-x86_64-binutils",
+    ],
+}
+
+
 # Class defs:
 
 class SpecificationError (Exception):
@@ -62,6 +78,27 @@ class NativeBundle:
         self.metadata = {}
         self.icon = ""
         self.launchers = []
+
+    def check_runtime_dependencies(self):
+        deps = RUNTIME_DEPENDENCIES.get(self.msystem)
+        assert deps is not None, "Runtime dependencies not defined?"
+        missing = []
+        for pkg in deps:
+            try:
+                subprocess.check_output(
+                    ["pacman", "-Qi", pkg],
+                    stderr=subprocess.STDOUT,
+                )
+            except subprocess.CalledProcessError:
+                missing.append(pkg)
+                logger.warning("Package %s is not installed.", pkg)
+        if missing:
+            cmdline = "pacman -S %s" % (" ".join(missing),)
+            logger.info(
+                "Please run “%s” to install the missing packages",
+                cmdline,
+            )
+            raise RuntimeError("Missing dependencies, cannot proceed")
 
     @property
     def _section(self):

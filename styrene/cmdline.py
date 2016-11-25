@@ -104,6 +104,7 @@ class ColorFormatter (logging.Formatter):
 def process_spec_file(spec, options):
     """Prepare the bundle as specified in the spec."""
     bundle = NativeBundle(spec)
+    bundle.check_runtime_dependencies()
     output_dir = options.output_dir
     if not output_dir:
         if not (options.build_zip or options.build_exe):
