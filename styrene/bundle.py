@@ -48,10 +48,10 @@ RUNTIME_DEPENDENCIES = {
         "mingw-w64-x86_64-nsis",
         "mingw-w64-x86_64-binutils",
     ],
-    consts.MSYSTEM.MINGW64: [
-        "mingw-w64-x86_64-gcc",
-        "mingw-w64-x86_64-nsis",
-        "mingw-w64-x86_64-binutils",
+    consts.MSYSTEM.MINGW32: [
+        "mingw-w64-i686-gcc",
+        "mingw-w64-i686-nsis",
+        "mingw-w64-i686-binutils",
     ],
 }
 
