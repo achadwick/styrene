@@ -1,30 +1,22 @@
 Command line usage
 ==================
 
-.. note:: Currently Styrene is not an installable package,
-   although it would be trivial to make a ``setup.py``.
-   The current way to run it for testing purposes
-   is through the ``styrene.sh`` script bundled with the source.
-
 Styrene creates distributable installers and portable zipfiles
 by bundling together MSYS2 packages.
 
 Usage
 -----
 
-Currently, styrene is launched from a wrapper script.
-If run from an MSYS environment,
-it will try to build for both MINGW32 and MINGW64 environments.
-If launched from one of the MINGWxx environments,
-it will build for that system only.
+Styrene must be be run from one of the MINGW32 or MINGW64 shells
+installed by an MSYS2 environment.
 
 1. ::
 
-    ./styrene.sh --help
+    styrene --help
 
 2. ::
 
-    ./styrene.sh [options] spec1.cfg ...
+    styrene [options] spec1.cfg ...
 
 The first form shows the usage message,
 and gives a terse explanation of what the options do.
@@ -79,18 +71,18 @@ Examples
 --------
 ::
 
-     ./styrene.sh gtk3-examples.cfg
+     styrene gtk3-examples.cfg
 
 This processes the standard test file in the normal way.
-It'll eventually write four output files
+It'll eventually write two output files
 into the current working directory,
 with names like ``gtk3-examples-w64-3.22.1-1-standalone.zip``
-or ``gtk3-examples-w32-3.22.1-1-installer.exe``.
+or ``gtk3-examples-w64-3.22.1-1-installer.exe``.
 
 
 ::
 
-     ./styrene.sh --debug gtk3-examples.cfg
+     styrene --debug gtk3-examples.cfg
 
 This shows debugging output: highly detailed explanations of each step.
 It's normally too verbose to be useful
@@ -98,7 +90,7 @@ except when trying to diagnose a fault.
 
 ::
 
-     ./styrene.sh --output-dir=/tmp/test1 gtk3-examples.cfg
+     styrene --output-dir=/tmp/test1 gtk3-examples.cfg
 
 This makes Styrene write all its output
 into a folder of your choice.
@@ -111,7 +103,7 @@ without installing it.
 
 ::
 
-     ./styrene.sh --pkg-dir=path/to/my/builds my-package.cfg
+     styrene --pkg-dir=path/to/my/builds my-package.cfg
 
 If you routinely `build your own`_ packages,
 you can tell Styrene to look in specific folders for packages

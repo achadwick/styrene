@@ -26,20 +26,14 @@ You will need some extra packages to make Styrene work.
 
 ## Download Styrene
 
-Since there are no proper releases of Styrene just yet,
-you'll need to get the Styrene code from github.
-
 ```sh
 pacman -S git
 git clone https://github.com/achadwick/styrene.git
 ```
 
-Currently there is no way to install Styrene.
-Expect to see a conventional `setup.py` soon.
-
 ## Trying it out
 
-Styrene includes a little launcher script which allows you to call it
+Styrene includes a little launcher script which allows you to test it
 from inside the clone you just made.
 It also includes an [example spec file][xcfg]
 which creates a bundle of all the GTK3 demo apps.
