@@ -190,7 +190,7 @@ def main():
     parser.add_option(
         "-p", "--pkg-dir",
         metavar="DIR",
-        help="Preferentially use package files from DIR.",
+        help="preferentially use package files from DIR",
         action="append",
         dest="pkgdirs",
         default=[],
