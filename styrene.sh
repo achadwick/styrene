@@ -3,7 +3,7 @@
 
 PACKAGE=styrene
 BASH=/usr/bin/bash.exe
-PYTHON=/usr/bin/python3
+PYTHON=python3
 
 set -e
 export PYTHONPATH=.
