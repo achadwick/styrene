@@ -413,7 +413,7 @@ class NativeBundle:
         remaining_packages = set()
         filename_re_tmpl = r'''
             ^ {name}
-            - (?P<version> .+ )
+            - (?P<version> [^-]+ - \d+ )
             - any
             [.]pkg[.]tar
             (?: [.](?:gz|xz) )?
