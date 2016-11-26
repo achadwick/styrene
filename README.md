@@ -19,7 +19,7 @@ You can also bundle packages you build yourself.
    that came with MSYS2:
 
     ```sh
-    pacman -S --needed zip python3 python3-pyalpm \
+    pacman -S --needed zip python3 \
       mingw-w64-x86_64-gcc mingw-w64-x86_64-nsis mingw-w64-x86_64-binutils \
       mingw-w64-i686-gcc mingw-w64-i686-nsis mingw-w64-i686-binutils
     ```
