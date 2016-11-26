@@ -501,7 +501,7 @@ class NativeBundle:
             consts.PACKAGE_DATA_SUBDIR,
         )
         cmd_tmpl_path = os.path.join(data_dir, consts.POSTINST_CMD_FILE)
-        with open(cmd_tmpl_path, "r") as fp:
+        with open(cmd_tmpl_path, "r", encoding="utf-8") as fp:
             cmd_tmpl = fp.read()
         crlf = "\r\n"
         cmd = cmd_tmpl.format(
@@ -511,19 +511,19 @@ class NativeBundle:
             postinst_sh=consts.POSTINST_SH_FILE,
         )
         cmd = crlf.join(cmd.splitlines())
-        with open(postinst_cmd, "w") as fp:
+        with open(postinst_cmd, "w", encoding="utf-8") as fp:
             print(cmd, end=crlf, file=fp)
 
         logger.info("Writing “%s”…", postinst_sh)
         sh_tmpl_path = os.path.join(data_dir, consts.POSTINST_SH_FILE)
-        with open(sh_tmpl_path, "r") as fp:
+        with open(sh_tmpl_path, "r", encoding="utf-8") as fp:
             sh_tmpl = fp.read()
         cr = "\n"
         sh = sh_tmpl % dict(
             launcher_sh_fragments=launcher_sh_frags,
             state_file=consts.LAUNCHER_LOCATION_STATE_FILE,
         )
-        with open(postinst_sh, "w") as fp:
+        with open(postinst_sh, "w", encoding="utf-8") as fp:
             print(sh, end=cr, file=fp)
 
     def _install_native_packages(self, root, pkgdirs):
@@ -760,7 +760,7 @@ class NativeBundle:
             consts.PACKAGE_DATA_SUBDIR,
             "bundle.nsi",
         )
-        with open(nsi_template_file, "r") as fp:
+        with open(nsi_template_file, "r", encoding="utf-8") as fp:
             nsis = fp.read()
         nsis = nsis % substs
 
@@ -769,7 +769,7 @@ class NativeBundle:
         nsi_file_basename = "{stub_name}.nsi".format(**substs)
         logger.info("Writing “%s”…", nsi_file_basename)
         nsi_file_path = os.path.join(output_dir, nsi_file_basename)
-        with open(nsi_file_path, "w") as fp:
+        with open(nsi_file_path, "w", encoding="utf-8") as fp:
             fp.write(nsis)
 
         nsh_file_basenames = ["assoc.nsh"]

@@ -83,20 +83,16 @@ class DesktopEntry:
 
     # Construction:
 
-    def update_from_desktop_file(self, fp):
+    def update_from_desktop_file(self, filename):
         """Update a DesktopEntry from a .desktop file.
 
-        :param fp: an open file-like object, or the path to a file.
+        :param filename: the path to a file.
 
         """
-        close_needed = False
         section_name = "Desktop Entry"
         required_type = "Application".casefold()
-        if isinstance(fp, str):
-            fp = open(fp, "r")
-            close_needed = True
-        try:
-            basename = os.path.basename(fp.name)
+        with open(filename, "r", encoding="utf-8") as fp:
+            basename = os.path.basename(filename)
             conf = configparser.RawConfigParser()
             conf.read_file(fp)
             mapping = conf[section_name]
@@ -111,9 +107,6 @@ class DesktopEntry:
                 )
             else:
                 self.update(mapping, basename=basename)
-        finally:
-            if close_needed:
-                fp.close()
 
     def update(self, mapping, basename=None):
         """Update a DesktopEntry from a mapping.
@@ -320,8 +313,9 @@ class DesktopEntry:
         with tempfile.TemporaryDirectory() as tmpdir:
             logger.debug("tmpdir: %r", tmpdir)
             objects = []
+            config_h_path = os.path.join(tmpdir, "config.h")
 
-            with open(os.path.join(tmpdir, "config.h"), "w") as fp:
+            with open(config_h_path, "w", encoding="utf-8") as fp:
                 config_h = dedent("""
                     #ifndef HAVE_CONFIG_H
                     #define HAVE_CONFIG_H
@@ -380,7 +374,7 @@ class DesktopEntry:
                     ico_path = os.path.join(tmpdir, ico_basename)
                     shutil.copy(orig_ico_path, ico_path)
                     ico_rc_path = os.path.join(tmpdir, ico_rc)
-                    with open(ico_rc_path, "w") as rc_fp:
+                    with open(ico_rc_path, "w", encoding="utf-8") as rc_fp:
                         print('1 ICON "%s"' % (ico_basename,), file=rc_fp)
                     try:
                         subprocess.check_call(

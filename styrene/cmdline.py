@@ -238,7 +238,7 @@ def main():
     for spec_file in args:
         try:
             spec = configparser.SafeConfigParser()
-            spec.read(spec_file)
+            spec.read(spec_file, encoding="utf-8")
         except:
             logger.exception(
                 "Failed to load bundle spec file “%s”",
