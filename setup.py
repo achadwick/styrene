@@ -5,11 +5,6 @@
 from distutils.core import setup
 import os
 
-
-if os.environ.get("MSYSTEM") != "MSYS":
-    raise RuntimeError("This setup script must be run from the MSYS shell.")
-
-
 setup(
     name="Styrene",
     version="0.1.1",
