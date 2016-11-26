@@ -3,13 +3,14 @@
 MSYS2 packages will soon be available for Styrene,
 but in the meantime you can install it manually.
 
-Styrene expects to be installed into the
-Cygwin-like `MSYS` environment of an MSYS2 installation,
-and run with its Python binary.
-However it expects to be invoked from the
+Styrene expects to be invoked from the
 native `MINGW32` or `MINGW64` environments that MSYS2 provides.
-Thus, the only supported way of installing the script is
+It can run with any of MSYS2's Python interpreters.
+The current approach is to use the native Python interpreter
+of your target system.
+
+To install, run
 
     python3 setup.py install --prefix=/some/where
 
-invoked from the MSYS2 shell.
+from either a MINGW64 or a MINGW32 shell.
