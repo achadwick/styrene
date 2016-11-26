@@ -627,6 +627,8 @@ class NativeBundle:
                         # TODO: use a function that consults
                         # nodelete_items for exclusion.
                     elif os.path.isfile(item):
+                        if not os.access(item, os.W_OK):  # native winXX sem
+                            os.chmod(item, 0o600)
                         os.unlink(item)
                     else:
                         logger.warning(
