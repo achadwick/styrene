@@ -36,6 +36,7 @@ Options
 -p DIR, --pkg-dir=DIR   Preferentially use package files from ``DIR``.
 --no-exe    Do not write the installer .exe output file.
 --no-zip    Do not write the standalone .zip output file.
+--colour=COLSPEC, --color=COLSPEC   Colourize output: yes/no/auto.
 
 Normally a temp directory is used for building,
 and the output distributables are then copied into the current directory.

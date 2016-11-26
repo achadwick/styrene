@@ -135,22 +135,6 @@ def process_spec_file(spec, options):
 # Startup:
 
 def main():
-    # Set up logging
-    log_format = "%(levelname)s: %(name)s: %(message)s"
-    console_handler = logging.StreamHandler(stream=sys.stderr)
-    if sys.stderr.isatty():
-        log_format = (
-            "%(levelCol)s%(levelname)s: "
-            "%(bold)s%(name)s%(boldOff)s: "
-            "%(message)s%(reset)s"
-        )
-        console_formatter = ColorFormatter(log_format)
-    else:
-        console_formatter = logging.Formatter(log_format)
-    console_handler.setFormatter(console_formatter)
-    root_logger = logging.getLogger(None)
-    root_logger.addHandler(console_handler)
-    root_logger.setLevel(logging.INFO)
 
     # Parse command line args
     parser = optparse.OptionParser(
@@ -225,13 +209,36 @@ def main():
         dest="build_zip",
         default=True,
     )
+    parser.add_option(
+        "--colour", "--color",
+        help="colourize output: yes/no/auto",
+        metavar="COLSPEC",
+        default="auto",
+    )
     options, args = parser.parse_args(sys.argv[1:])
     if not len(args):
         parser.print_help()
         sys.exit(1)
 
     # Initialize logging
-    root_logger = logging.getLogger()
+    colourize = {
+        "yes".casefold(): True,
+        "no".casefold(): False,
+    }.get(options.colour.casefold(), sys.stderr.isatty())
+    if colourize:
+        log_format = (
+            "%(levelCol)s%(levelname)s: "
+            "%(bold)s%(name)s%(boldOff)s: "
+            "%(message)s%(reset)s"
+        )
+        console_formatter = ColorFormatter(log_format)
+    else:
+        log_format = "%(levelname)s: %(name)s: %(message)s"
+        console_formatter = logging.Formatter(log_format)
+    console_handler = logging.StreamHandler(stream=sys.stderr)
+    console_handler.setFormatter(console_formatter)
+    root_logger = logging.getLogger(None)
+    root_logger.addHandler(console_handler)
     root_logger.setLevel(options.loglevel)
 
     # Process bundles

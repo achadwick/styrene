@@ -18,4 +18,4 @@ build:
     - pacman -S --needed --noconfirm --noprogressbar mingw-w64-x86_64-nsis
     - pacman -S --needed --noconfirm --noprogressbar mingw-w64-x86_64-gcc
     - pacman -S --needed --noconfirm --noprogressbar mingw-w64-x86_64-binutils
-    - ./styrene.sh --debug gtk3-examples.cfg
+    - ./styrene.sh --debug --colour=yes gtk3-examples.cfg
