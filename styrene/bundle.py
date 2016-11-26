@@ -19,8 +19,6 @@
 """Bundle specification, read from input .cfg files, writes main output.
 """
 
-import pyalpm
-
 from .launchers import DesktopEntry
 from .utils import str2key
 from .utils import nsis_escape
@@ -419,7 +417,7 @@ class NativeBundle:
             (?: [.](?:gz|xz) )?
             $
         '''
-        keyobj = functools.cmp_to_key(pyalpm.vercmp)
+        keyobj = functools.cmp_to_key(self._vercmp)
         for pkg_name in packages:
             filename_re = filename_re_tmpl.format(
                 name=re.escape(pkg_name),
@@ -463,6 +461,17 @@ class NativeBundle:
                 cmd += ["--ignore", ",".join(local_packages)]
             logger.debug("Running “%s”…", " ".join(cmd))
             subprocess.check_call(cmd)
+
+    @staticmethod
+    def _vercmp(v1, v2):
+        """Compares package version strings."""
+        # Ugly way of doing this, but necessary if this is to run
+        # with the native MINGW64 and 32 Pythons.
+        v1 = str(v1)
+        v2 = str(v2)
+        sign_str = subprocess.check_output(["vercmp", v1, v2])
+        sign_str = sign_str.strip()
+        return int(sign_str)
 
     def _install_postinst_scripts(self, root):
         """Installs specified post-install scripting for the bundle.
