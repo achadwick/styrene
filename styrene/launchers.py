@@ -478,8 +478,8 @@ class DesktopEntry:
             # Postinst fragment from {basename}
             win7appid="/{msystem_subdir}/bin/win7appid.exe"
             shortcut="$START_MENU_PROGRAMS/{sc_folder}/{sc_name}.lnk"
-            echo "Setting appid for {sc_folder}/{sc_name}.lnk ..."
             if test "x$START_MENU_PROGRAMS" != "x"; then
+                echo "Setting appid for {sc_folder}/{sc_name}.lnk ..."
                 if ! test -f "$shortcut"; then
                     echo "warning: shortcut not installed: $shortcut"
                 elif ! test -f "$win7appid"; then
