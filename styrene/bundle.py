@@ -177,7 +177,7 @@ class NativeBundle:
         self._install_icons(distroot)
         self._install_exe_launchers(distroot)
         self._install_packages(distroot, ["bash", "coreutils"])  # for postinst
-        self._delete_surplus_files(distroot)  # including uneeded cygwin
+        self._delete_surplus_files(distroot, options)
         self._install_postinst_scripts(distroot, options)
 
         distfiles = []
@@ -602,7 +602,7 @@ class NativeBundle:
                     return win32_relpath + '\\' + name
         return None
 
-    def _delete_surplus_files(self, root):
+    def _delete_surplus_files(self, root, options):
         """Delete unwanted files from the bundle."""
 
         # TODO: Could this pass examine all wanted .EXE files and
@@ -630,6 +630,16 @@ class NativeBundle:
             "usr/bin/msys-iconv-*.dll",
             "mingw*/bin/win7appid.exe",
         ])
+        if options.output_dir:
+            # To support re-runs with the same output tree,
+            # always retain a minimum viable Pacman database.
+            # Post-install files are only kept if specified in the
+            # config file.
+            nodelete_patterns.append("var/lib/pacman/sync")
+            nodelete_patterns.append("var/lib/pacman/local/ALPM_DB_VERSION")
+            nodelete_patterns.append("var/lib/pacman/local/*/desc")
+            nodelete_patterns.append("var/lib/pacman/local/*/files")
+            nodelete_patterns.append("var/lib/pacman/local/*/mtree")
 
         delete_spec = section.get("delete", "")
         delete_spec = delete_spec.format(**substs)
