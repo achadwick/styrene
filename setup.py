@@ -7,7 +7,7 @@ import os
 
 setup(
     name="Styrene",
-    version="0.2.0",
+    version="0.3.0-alpha",
     description=(
         "Tool to make usable app bundles for regular Windows users "
         "out of MSYS2 binary packages"
