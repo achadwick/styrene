@@ -8,6 +8,9 @@ build:
   shell: msys32
   commands:
     - env
+    - pacman -Sy --noconfirm --noprogressbar
+    - ls -l /etc/pacman.d || true
+    - cat /etc/pacman.d/mirrorlist.* || true
     - pacman -S --needed --noconfirm --noprogressbar zip
     - pacman -S --needed --noconfirm --noprogressbar python3
     - which python3
@@ -18,4 +21,4 @@ build:
     - pacman -S --needed --noconfirm --noprogressbar mingw-w64-x86_64-nsis
     - pacman -S --needed --noconfirm --noprogressbar mingw-w64-x86_64-gcc
     - pacman -S --needed --noconfirm --noprogressbar mingw-w64-x86_64-binutils
-    - ./styrene.sh --debug --colour=yes gtk3-examples.cfg
+    - ./styrene.sh --debug --colour=yes --output-dir=/tmp/test1 --no-zip --no-exe gtk3-examples.cfg

@@ -636,6 +636,11 @@ class NativeBundle:
         delete_patterns = delete_spec.strip().split()
 
         surplus = list(find_surplus(root, delete_patterns, nodelete_patterns))
+        if len(surplus) == 0:
+            logger.warning(
+                "No usable delete rules found, or nothing to delete."
+            )
+            return
         surplus.sort(reverse=True)
         for item in surplus:
             if not os.path.exists(item):
@@ -829,19 +834,29 @@ def find_surplus(root, del_patterns, keep_patterns):
     root = os.path.normpath(root)
     root = os.path.normcase(root)
 
+    glob_opts = dict(recursive=True)
+    try:
+        glob.iglob("/nonexistent/**.foo", **glob_opts)
+    except:
+        logger.error(
+            "Glob options %r are not supported on this Python version.",
+            glob_opts,
+        )
+        return []
+
     # Keep every matched path, its contents if it's a folder,
     # and every folder path between the root and the match.
     keep_paths = set([root])
     for pattern in keep_patterns:
         pattern = os.path.join(glob.escape(root), pattern)
-        for path in glob.iglob(pattern, recursive=True):
+        for path in glob.iglob(pattern, **glob_opts):
             # Item itself
             path = os.path.normpath(path)
             keep_paths.add(path)
             # Recursive contents
             if os.path.isdir(path):
                 c_pattern = os.path.join(glob.escape(path), "**")
-                for c_path in glob.iglob(c_pattern, recursive=True):
+                for c_path in glob.iglob(c_pattern, **glob_opts):
                     c_path = os.path.normpath(c_path)
                     keep_paths.add(c_path)
             # Paths between root and match
@@ -859,13 +874,13 @@ def find_surplus(root, del_patterns, keep_patterns):
     surplus_paths = set()
     for pattern in del_patterns:
         pattern = os.path.join(glob.escape(root), pattern)
-        for path in glob.glob(pattern, recursive=True):
+        for path in glob.glob(pattern, **glob_opts):
             path = os.path.normpath(path)
             if path not in keep_paths:
                 surplus_paths.add(path)
             if os.path.isdir(path):
                 c_pattern = os.path.join(glob.escape(path), "**")
-                for c_path in glob.glob(c_pattern, recursive=True):
+                for c_path in glob.glob(c_pattern, **glob_opts):
                     c_path = os.path.normpath(c_path)
                     if c_path not in keep_paths:
                         surplus_paths.add(c_path)
