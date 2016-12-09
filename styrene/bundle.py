@@ -178,7 +178,7 @@ class NativeBundle:
         self._install_exe_launchers(distroot)
         self._install_packages(distroot, ["bash", "coreutils"])  # for postinst
         self._delete_surplus_files(distroot)  # including uneeded cygwin
-        self._install_postinst_scripts(distroot)
+        self._install_postinst_scripts(distroot, options)
 
         distfiles = []
         if options.build_exe:
@@ -473,7 +473,7 @@ class NativeBundle:
         sign_str = sign_str.strip()
         return int(sign_str)
 
-    def _install_postinst_scripts(self, root):
+    def _install_postinst_scripts(self, root, options):
         """Installs specified post-install scripting for the bundle.
 
         The main post-install script, postinst.cmd, is used in both
@@ -510,7 +510,10 @@ class NativeBundle:
             launcher_cmd_fragments=launcher_cmd_frags,
             postinst_sh=consts.POSTINST_SH_FILE,
         )
-        cmd = crlf.join(cmd.splitlines())
+        cmd_lines = cmd.splitlines()
+        if options.debug:
+            cmd_lines.append("pause")
+        cmd = crlf.join(cmd_lines)
         with open(postinst_cmd, "w", encoding="utf-8") as fp:
             print(cmd, end=crlf, file=fp)
 

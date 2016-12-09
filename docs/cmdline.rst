@@ -29,8 +29,7 @@ Options
 -h, --help  Show the help message,
             and exit immediately with a return code of zero.
 -q, --quiet           Log errors and warnings only.
--v, --verbose         Log detailed information about processing (default).
---debug               Log lengthy debugging information.
+--debug               Debug mode (noisy operation, pause after postinst).
 -o DIR, --output-dir=DIR   Where to store output.
                            The folder ``DIR`` will be created if needed.
 -p DIR, --pkg-dir=DIR   Preferentially use package files from ``DIR``.
@@ -85,9 +84,13 @@ or ``gtk3-examples-w64-3.22.1-1-installer.exe``.
 
      styrene --debug gtk3-examples.cfg
 
-This shows debugging output: highly detailed explanations of each step.
+This enables debug mode: highly detailed explanations of each step.
 It's normally too verbose to be useful
 except when trying to diagnose a fault.
+
+Debug mode should not be used for regular builds.
+It append a “Press return to continue…” line to the post-install script,
+so that you can check that everything in it works.
 
 ::
 

@@ -162,24 +162,14 @@ def main():
     parser.add_option(
         "-q", "--quiet",
         help="log errors and warnings only",
-        action="store_const",
-        const=logging.WARNING,
-        dest="loglevel",
-    )
-    parser.add_option(
-        "-v", "--verbose",
-        help="log detailed information about processing (default)",
-        action="store_const",
-        const=logging.INFO,
-        dest="loglevel",
-        default=logging.INFO,
+        action="store_true",
+        default=False,
     )
     parser.add_option(
         "--debug",
-        help="log lengthy debugging information",
-        action="store_const",
-        const=logging.DEBUG,
-        dest="loglevel",
+        help="debug mode (noisy operation, pause after postinst)",
+        action="store_true",
+        default=False,
     )
     parser.add_option(
         "-o", "--output-dir",
@@ -239,7 +229,13 @@ def main():
     console_handler.setFormatter(console_formatter)
     root_logger = logging.getLogger(None)
     root_logger.addHandler(console_handler)
-    root_logger.setLevel(options.loglevel)
+    if options.quiet:
+        loglevel = logging.WARNING
+    elif options.debug:
+        loglevel = logging.DEBUG
+    else:
+        loglevel = logging.INFO
+    root_logger.setLevel(loglevel)
 
     # Process bundles
     for spec_file in args:
