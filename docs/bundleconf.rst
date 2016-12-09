@@ -187,15 +187,31 @@ nodelete
             mingw*/bin/*.dll
             mingw*/bin/gtk3-demo.exe
             mingw*/bin/xmlcatalog.exe
-            mingw*/bin/win7appid.exe
 
 This key provides a space-separated list of glob patterns,
 which will be resolved relative to the bundle root.
 Its matched files and folders will be retained,
 even if they have been matched by ``delete``.
 
-Currently these cannot override a parent directory which has been
-matched by a delete glob.
+Glob patterns
+-------------
+
+The special characters used by ``delete`` and ``nodelete`` are:
+
+==========  =========================================================
+Pattern     Matches…
+==========  =========================================================
+``*``       any sequence of characters other than ``/``
+``?``       any single character
+``[abc]``   any single character in the list (``a``, ``b``, or ``c``)
+``[!abc]``  any character *not* listed
+``**``      any files and/or zero or more subdirectories
+==========  =========================================================
+
+If a ``**`` is followed by a ``/``,
+then it matches only a sequence of subdirectories.
+
+Styrene use Python’s `glob module`_ for this type of path matching.
 
 Launcher definitions
 --------------------
@@ -314,3 +330,4 @@ The user will be asked to press return when the command has exited.
 .. _configparser: https://docs.python.org/3/library/configparser.html
 .. _Desktop Entry Specification: https://specifications.freedesktop.org/desktop-entry-spec/latest/
 .. _CreateProcessW(): https://msdn.microsoft.com/en-us/library/windows/desktop/ms682425(v=vs.85).aspx
+.. _glob module: https://docs.python.org/3/library/glob.html

@@ -604,42 +604,58 @@ class NativeBundle:
 
     def _delete_surplus_files(self, root):
         """Delete unwanted files from the bundle."""
+
+        # TODO: Could this pass examine all wanted .EXE files and
+        #       automatically determine+keep their support .DLLs?
+
         section = self._section
         substs = self.msystem.substs
 
         nodelete_spec = section.get("nodelete", "")
         nodelete_patterns = nodelete_spec.format(**substs)
         nodelete_patterns = nodelete_spec.strip().split()
-        nodelete_items = set()
-        for patt in nodelete_patterns:
-            for match in glob.glob(os.path.join(root, patt)):
-                nodelete_items.add(match)
-                # TODO: if it's a dir, exclude its descendents
+        nodelete_patterns.extend([
+            # Launchers and top-level speccial dirs
+            "*.exe",
+            "_icons",
+            "_scripts",
+            # Stuff that's always needed by the post-install scripting
+            "tmp",
+            "usr/bin/bash.exe",
+            "usr/bin/touch.exe",
+            "usr/bin/basename.exe",
+            "usr/bin/cygpath.exe",
+            "usr/bin/msys-intl-*.dll",
+            "usr/bin/msys-2*.dll",
+            "usr/bin/msys-iconv-*.dll",
+            "mingw*/bin/win7appid.exe",
+        ])
 
         delete_spec = section.get("delete", "")
         delete_spec = delete_spec.format(**substs)
         delete_patterns = delete_spec.strip().split()
-        for patt in delete_patterns:
-            for item in glob.glob(os.path.join(root, patt)):
-                if item in nodelete_items:
-                    continue
-                logger.debug("delete %r", item)
-                try:
-                    if os.path.isdir(item):
-                        shutil.rmtree(item, ignore_errors=True, onerror=None)
-                        # TODO: use a function that consults
-                        # nodelete_items for exclusion.
-                    elif os.path.isfile(item):
-                        if not os.access(item, os.W_OK):  # native winXX sem
-                            os.chmod(item, 0o600)
-                        os.unlink(item)
-                    else:
-                        logger.warning(
-                            "Filesystem entry “%s” has an unknown type",
-                            item,
-                        )
-                except:
-                    logger.exception("Failed to delete “%s”", item)
+
+        surplus = list(find_surplus(root, delete_patterns, nodelete_patterns))
+        surplus.sort(reverse=True)
+        for item in surplus:
+            if not os.path.exists(item):
+                continue
+            try:
+                if os.path.isdir(item):
+                    logger.debug("rmtree %r", item)
+                    shutil.rmtree(item, ignore_errors=True, onerror=None)
+                elif os.path.isfile(item):
+                    logger.debug("rm %r", item)
+                    if not os.access(item, os.W_OK):  # native winXX sem
+                        os.chmod(item, 0o600)
+                    os.unlink(item)
+                else:
+                    logger.warning(
+                        "Filesystem entry “%s” has an unknown type",
+                        item,
+                    )
+            except:
+                logger.exception("Failed to delete “%s”", item)
 
     def _write_zip_distfile(self, root, output_dir):
         """Package a frozen bundle as a standalone zipfile.
@@ -801,3 +817,57 @@ class NativeBundle:
             )
 
         return [installer_exe_path]
+
+
+def find_surplus(root, del_patterns, keep_patterns):
+    """Find "surplus" files and folders within a root."""
+
+    if not os.path.isdir(root):
+        raise ValueError("Root path %r is not a directory" % (root,))
+
+    root = os.path.abspath(root)
+    root = os.path.normpath(root)
+    root = os.path.normcase(root)
+
+    # Keep every matched path, its contents if it's a folder,
+    # and every folder path between the root and the match.
+    keep_paths = set([root])
+    for pattern in keep_patterns:
+        pattern = os.path.join(glob.escape(root), pattern)
+        for path in glob.iglob(pattern, recursive=True):
+            # Item itself
+            path = os.path.normpath(path)
+            keep_paths.add(path)
+            # Recursive contents
+            if os.path.isdir(path):
+                c_pattern = os.path.join(glob.escape(path), "**")
+                for c_path in glob.iglob(c_pattern, recursive=True):
+                    c_path = os.path.normpath(c_path)
+                    keep_paths.add(c_path)
+            # Paths between root and match
+            p, t = path, None
+            root_pfx = root
+            if not root_pfx.endswith(os.path.sep):
+                root_pfx += os.path.sep
+            while p is not None and p.startswith(root_pfx):
+                p = os.path.normpath(p)
+                keep_paths.add(p)
+                p, t = os.path.split(p)
+
+    # Everything matched by the delete patterns minus those matched by
+    # the keep patterns is surplus.
+    surplus_paths = set()
+    for pattern in del_patterns:
+        pattern = os.path.join(glob.escape(root), pattern)
+        for path in glob.glob(pattern, recursive=True):
+            path = os.path.normpath(path)
+            if path not in keep_paths:
+                surplus_paths.add(path)
+            if os.path.isdir(path):
+                c_pattern = os.path.join(glob.escape(path), "**")
+                for c_path in glob.glob(c_pattern, recursive=True):
+                    c_path = os.path.normpath(c_path)
+                    if c_path not in keep_paths:
+                        surplus_paths.add(c_path)
+
+    return surplus_paths
