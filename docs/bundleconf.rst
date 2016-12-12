@@ -48,6 +48,27 @@ The primary package is used for lots of default values for the bundle,
 on the assumption that you're bundling a single interesting piece of
 software.
 
+assume_installed
+................
+
+    ::
+
+        assume_installed = {pkg_prefix}python3 {pkg_prefix}ncurses
+
+This key lists packages that ``pacman`` should assume are installed.
+It has the same syntax as ``packages``, and the same subtititions apply.
+
+Install assumptions are a partial workaround for
+MSYS2’s unfortunate preference for
+full-fat packages with every aspect of a lib or a program thrown in.
+This choice tends to lead to wide dependency cascades which
+are fine for developer environments, but bad for lean bundling.
+The ``assume_installed`` key can be used to avoid installation of
+particularly large sub-dependencies which your app doesn't need.
+
+Styrene provides another workaround in the form of the ``delete`` key,
+but using that requires a deeper knowledge of your bundle's system.
+
 filename_stub
 .............
 

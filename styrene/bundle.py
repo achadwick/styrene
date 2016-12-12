@@ -244,6 +244,15 @@ class NativeBundle:
         return packages_raw.split()
 
     @property
+    def assume_installed_packages(self):
+        """The list of packages which are assumed to be installed."""
+        packages_raw = self._section.get("assume_installed", "")
+        packages_raw = packages_raw.strip()
+        substs = self.msystem.substs
+        packages_raw = packages_raw.format(**substs)
+        return packages_raw.split()
+
+    @property
     def display_name(self):
         """The name to display when referring to the bundle.
 
@@ -400,6 +409,9 @@ class NativeBundle:
             "--noprogressbar",
             "--noscriptlet",  # postinst will do this
         ]
+        for p in self.assume_installed_packages:
+            cmd_common.append("--assume-installed")
+            cmd_common.append(p)
 
         # Divide the list of package names into ones that can be added
         # from files in the pkgdirs, and ones which must be synced from
