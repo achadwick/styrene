@@ -10,6 +10,7 @@ has not yet been released.
   You can now use `delete = *` in configs and override what it matches
   sensibly with `nodelete`.
 * Doc and examples updated.
+* Can now mark packages for --assume-installed.
 
 0.2.0
 -----
