@@ -77,6 +77,8 @@ def findexe(basename, prefix, exts=(".exe",)):
         ("bin",),
     ]
     for ext in exts:
+        if basename.casefold().endswith(ext.casefold()):
+            ext = ""
         for path_elems in search_paths:
             path_elems = list(path_elems)
             path_elems.append(basename + ext)
