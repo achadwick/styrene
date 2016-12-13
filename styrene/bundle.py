@@ -117,6 +117,8 @@ class NativeBundle:
 
         """
         spec = self.spec
+        substs = dict(self.msystem.substs)
+
         self.launchers = []
         launcher_names = self._section.get("launchers", "").strip().split()
         for launcher_name in launcher_names:
@@ -151,7 +153,11 @@ class NativeBundle:
             if launcher_path:
                 launcher.update_from_desktop_file(launcher_path)
             if launcher_section:
-                launcher.update(launcher_section, basename=launcher_name)
+                launcher.update(
+                    launcher_section,
+                    basename=launcher_name,
+                    substs=substs,
+                )
 
             if launcher.is_valid():
                 self.launchers.append(launcher)

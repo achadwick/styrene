@@ -88,6 +88,11 @@ class DesktopEntry:
 
         :param filename: the path to a file.
 
+        This uses update() internally.
+        Note that when a launcher is updated from a desktop file,
+        substitutions are never applied.
+        Substs are for overrides defined in bundle configs only.
+
         """
         section_name = "Desktop Entry"
         required_type = "Application".casefold()
@@ -108,11 +113,12 @@ class DesktopEntry:
             else:
                 self.update(mapping, basename=basename)
 
-    def update(self, mapping, basename=None):
+    def update(self, mapping, basename=None, substs=None):
         """Update a DesktopEntry from a mapping.
 
         :param mapping: a dict-like object.
         :param str basename: string to use as a replacement basename
+        :param dict substs: value substititions, applied with str.format()
 
         For launchers defined only in the config file, basename should
         normally be the name of the section (minus any filename extension).
@@ -152,6 +158,8 @@ class DesktopEntry:
             if value is None:
                 continue
             value = str(value).strip()
+            if substs:
+                value = value.format(**substs)
             value = conv(value)
             setattr(self, attr, value)
         return self

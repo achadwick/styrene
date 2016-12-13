@@ -253,6 +253,9 @@ in the main ``[bundle]``'s ``launchers`` key.
 Launcher definitions will not be used unless they define a ``name`` and
 an ``exec`` line. Everything else is optional.
 
+The values defined in a launcher definition section can use
+the standard substitution codes, as described in the section below.
+
 name
 ....
     ::
@@ -299,6 +302,10 @@ exec
     ::
 
         exec = gtk3-demo --run=event_axes
+
+    ::
+
+        exec = python2w.exe {msystem_subdir}/bin/mypaint %f
 
 The program to execute, possibly with arguments.
 This key has the syntax defined in the `Desktop Entry Specification`,
@@ -359,8 +366,27 @@ installed in the bundle tree.
 When Styrene creates an installer, it consults all the XML files
 in ``mingw*/share/mime/packages/*.xml`` to discover which extensions
 the types map to.
+
+Standard substitutions
+----------------------
+
+Styrene sometimes applies substitutions to the values you define in
+in the bundle specification file. Places where this happens are noted
+above. The standard substitutions which can be applied are very limited:
+
+====================  =======================================================
+Token                 Expansion
+====================  =======================================================
+``{bits}``            Number of bits for the target system: ``32`` or ``64``.
+``{msystem_subdir}``  Subdir for the target, ``mingw64`` or ``mingw32``.
+``{pkg_prefix}``      Prefix for package names, e.g. ``mingw-w64-x86_64-``.
+====================  =======================================================
+
+Styrene uses the Python "braces" `format string syntax`_.
+
 .. _.INI: https://en.wikipedia.org/wiki/INI_file
 .. _configparser: https://docs.python.org/3/library/configparser.html
 .. _Desktop Entry Specification: https://specifications.freedesktop.org/desktop-entry-spec/latest/
 .. _CreateProcessW(): https://msdn.microsoft.com/en-us/library/windows/desktop/ms682425(v=vs.85).aspx
 .. _glob module: https://docs.python.org/3/library/glob.html
+.. _format string syntax: https://docs.python.org/3/library/string.html#formatstrings
