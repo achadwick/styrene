@@ -321,20 +321,16 @@ Apps will be pinnable
 (they will be assigned the same appid as start menu .lnk shortcuts),
 and Styrene will hide any CMD window associated with the app sensibly.
 
-Styrene launchers respect the following field codes:
+Styrene launchers respect the following field codes in *Exec*:
 
-%f
-    A single file name.
-
-%F
-    A list of file names,
-    each of which will be passed as a separate argument.
-
-%u
-    Treated as %f by styrene.
-
-%U
-    Treated as %F by styrene.
+======  ============================================================
+Code    Interpretation
+======  ============================================================
+``%f``  A single file name.
+``%F``  A list of file names. Each is passed as a separate argument.
+``%u``  Treated as %f by styrene.
+``%U``  Treated as %F by styrene.
+======  ============================================================
 
 terminal
 ........
