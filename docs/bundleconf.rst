@@ -347,6 +347,22 @@ it forces the launcher to invoke the command via bash
 in a visible CMD window.
 The user will be asked to press return when the command has exited.
 
+mimetype
+........
+    ::
+
+        mimetype = image/openraster;image/png;
+
+This key is a list of MIME types the launcher can open.
+Styrene converts this into a list of Windows file name extensions,
+and offers the user a choice about whether to associate your launcher
+with those extensions during installation.
+
+This normally requires the ``shared-mime-info`` package to be
+installed in the bundle tree.
+When Styrene creates an installer, it consults all the XML files
+in ``mingw*/share/mime/packages/*.xml`` to discover which extensions
+the types map to.
 .. _.INI: https://en.wikipedia.org/wiki/INI_file
 .. _configparser: https://docs.python.org/3/library/configparser.html
 .. _Desktop Entry Specification: https://specifications.freedesktop.org/desktop-entry-spec/latest/
