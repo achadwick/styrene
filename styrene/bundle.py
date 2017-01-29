@@ -699,7 +699,7 @@ class NativeBundle:
         """
         output_file_basename = "{stub_name}-{version}-standalone.zip".format(
             stub_name=self.stub_name,
-            version=self.metadata.get("version", "0"),
+            version=self.version,
         )
         logger.info("Writing “%s”…", output_file_basename)
         output_file_path = os.path.join(output_dir, output_file_basename)
