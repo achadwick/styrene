@@ -3,3 +3,4 @@ styrene/__pycache__
 .*.swp
 docs/_build/*
 build
+*~
