@@ -1,0 +1,65 @@
+# Config file for Appveyor
+# Based of Reference at: https://www.appveyor.com/docs/appveyor-yml/
+# 
+# Notes:
+#   - Indent each level of configuration with 2 spaces. Do not use tabs!
+#   - All section names are case-sensitive.
+
+#---------------------------------#
+#      general configuration      #
+#---------------------------------#
+
+# version format
+version: 0.3.{build}
+
+# Do not build on tags (GitHub and BitBucket)
+skip_tags: true
+
+# Do not build feature branch with open Pull Requests
+skip_branch_with_pr: true
+
+#---------------------------------#
+#    environment configuration    #
+#---------------------------------#
+
+# Build worker image (VM template)
+image: Visual Studio 2015
+
+# set clone depth
+clone_depth: 5
+
+environment:
+  matrix:
+    - MSYS2_ARCH: x86_64
+      MSYSTEM: MINGW64
+    - MSYS2_ARCH: i686
+      MSYSTEM: MINGW32
+
+#---------------------------------#
+#           Run Scripts           #
+#---------------------------------#
+
+# scripts that run after cloning repository
+init:
+  - PATH C:\msys64\%MSYSTEM%\bin;C:\msys64\usr\bin;C:\msys64\bin;%PATH%
+  
+install:
+  - bash %APPVEYOR_BUILD_FOLDER%\scripts\msys2_build.sh installdeps
+  - bash %APPVEYOR_BUILD_FOLDER%\scripts\msys2_build.sh pkgbuild
+
+build_script:
+  - bash %APPVEYOR_BUILD_FOLDER%\scripts\msys2_build.sh run
+
+after_build:
+  - bash %APPVEYOR_BUILD_FOLDER%\scripts\msys2_build.sh copy
+
+test: off
+
+#---------------------------------#
+#      artifacts configuration    #
+#---------------------------------#
+
+artifacts:
+  - path: \tmp\output.styrene\
+    name: styrene_output
+    type: zip
