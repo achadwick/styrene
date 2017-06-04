@@ -16,7 +16,7 @@ You can also bundle packages you build yourself.
 1. Install [MSYS2](https://msys2.github.io/)
    from its download page, and upgrade it as described there.
 
-2. Install Styrene’s dependencies from the *MSYS Shell* command line
+2. Install Styrene’s runtime dependencies from the *MSYS Shell* command line
    that came with MSYS2:
 
    ```sh
@@ -27,14 +27,15 @@ You can also bundle packages you build yourself.
      mingw-w64-i686-gcc mingw-w64-i686-nsis mingw-w64-i686-binutils
    ```
 
-   And the ones for fetching and installing too:
+   And the ones for fetching and installing the Styrene source too:
 
    ```sh
    pacman -S --needed git
-   pacman -S mingw-w64-i686-python3-pip mingw-w64-i686-python3-pip
+   pacman -S --needed mingw-w64-i686-python3-pip mingw-w64-i686-python3-pip
    ```
 
-3. Clone Styrene from its GitHub repository and install it
+3. Clone Styrene from its GitHub repository and install it.
+   You'll need the *MINGW64 Shell* or its *MINGW32* buddy for these later bits.
 
    ```sh
    git clone https://github.com/achadwick/styrene.git
