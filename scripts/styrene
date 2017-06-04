@@ -1,4 +1,43 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
+# Copyright © 2017 Andrew Chadwick.
+#
+# This file is part of Styrene.
+#
+# Styrene is free software: you can redistribute it and/or modify it
+# under the terms of the GNU General Public License as published by the
+# Free Software Foundation, either version 3 of the License, or (at your
+# option) any later version.
+#
+# Styrene is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with Styrene.  If not, see <http://www.gnu.org/licenses/>.
 
-import styrene.cmdline
-styrene.cmdline.main()
+import sys
+import os.path
+
+
+def _main():
+    """Massage paths, and call styrene.cmdline.main()
+
+    This kickoff script has to get rid of the directory housing this
+    startup script from sys.path. Setuptools, and thus pip3, sometimes
+    installs things in a funny way that creates an additional styrene.py
+    on the MSYS2/Windows platform despite our best efforts. It's never
+    right for that to be the styrene module.
+
+    """
+    scriptdir = os.path.dirname(os.path.abspath(__file__))
+    for p in list(sys.path):
+        if os.path.exists(p) and os.path.samefile(p, scriptdir):
+            sys.path.remove(p)
+
+    import styrene.cmdline
+    styrene.cmdline.main()
+
+
+if __name__ == "__main__":
+    _main()

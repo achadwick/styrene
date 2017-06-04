@@ -2,8 +2,7 @@
 # This file is dedicated into the public domain, CC0 v1.0.
 # https://creativecommons.org/publicdomain/zero/1.0/
 
-from distutils.core import setup
-import os
+from setuptools import setup
 
 setup(
     name="Styrene",
