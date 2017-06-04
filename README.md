@@ -18,25 +18,37 @@ You can also bundle packages you build yourself.
 2. Install Styrene’s dependencies from the *MSYS Shell* command line
    that came with MSYS2:
 
-    ```sh
-    pacman -S --needed zip \
-      mingw-w64-x86_64-python3 \
-      mingw-w64-x86_64-gcc mingw-w64-x86_64-nsis mingw-w64-x86_64-binutils \
-      mingw-w64-i686-python3 \
-      mingw-w64-i686-gcc mingw-w64-i686-nsis mingw-w64-i686-binutils
-    ```
+   ```sh
+   pacman -S --needed zip \
+     mingw-w64-x86_64-python3 \
+     mingw-w64-x86_64-gcc mingw-w64-x86_64-nsis mingw-w64-x86_64-binutils \
+     mingw-w64-i686-python3 \
+     mingw-w64-i686-gcc mingw-w64-i686-nsis mingw-w64-i686-binutils
+   ```
 
-3. Clone Styrene from its GitHub repository and try it out!
+   And the ones for fetching and installing too:
 
-    ```sh
-    pacman -S --needed git
-    git clone https://github.com/achadwick/styrene.git
-    cd styrene
-    ./styrene.sh gtk3-examples.cfg
-    start .     # then try running one of the installer .exe files
-    ```
+   ```sh
+   pacman -S --needed git
+   pacman -S mingw-w64-i686-python3-pip mingw-w64-i686-python3-pip
+   ```
 
-4. [Read the docs](http://styrene.readthedocs.io) to find out more.
+3. Clone Styrene from its GitHub repository and install it
+
+   ```sh
+   git clone https://github.com/achadwick/styrene.git
+   cd styrene
+   pip3 install .
+   ```
+
+4. Try it out with the demo config file!
+
+   ```sh
+   styrene ./gtk3-examples.cfg
+   start .     # then try running one of the installer .exe files
+   ```
+
+5. [Read the docs](http://styrene.readthedocs.io) to find out more.
 
 ## Contributing
 
