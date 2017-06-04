@@ -1,7 +1,8 @@
 # Styrene – a package bundler
 
-[![Build Status](https://tea-ci.org/api/badges/achadwick/styrene/status.svg)](https://tea-ci.org/achadwick/styrene)
-[![Documentation Status](https://readthedocs.org/projects/styrene/badge/?version=latest)](http://styrene.readthedocs.io/en/latest/?badge=latest)
+[![Documentation](https://readthedocs.org/projects/styrene/badge/?version=latest)](http://styrene.readthedocs.io/en/latest/?badge=latest)
+[![Appveyor Build status](https://ci.appveyor.com/api/projects/status/dxspflkulv60uv97?svg=true)](https://ci.appveyor.com/project/achadwick/styrene)
+[![Tea-CI Build status](https://tea-ci.org/api/badges/achadwick/styrene/status.svg)](https://tea-ci.org/achadwick/styrene)
 
 Styrene makes usable app bundles for Windows.
 It repacks MSYS2 software into neat bundles that are nicer for your users,
