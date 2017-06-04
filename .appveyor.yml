@@ -10,7 +10,8 @@
 #---------------------------------#
 
 # version format
-version: 0.3.{build}
+# The bit before the + sign should always match the one in setup.py.
+version: "0.3.0-alpha+{branch}.{build}"
 
 # Do not build on tags (GitHub and BitBucket)
 skip_tags: true
@@ -41,17 +42,15 @@ environment:
 
 # scripts that run after cloning repository
 init:
+  - dir c:\
   - PATH C:\msys64\%MSYSTEM%\bin;C:\msys64\usr\bin;C:\msys64\bin;%PATH%
   
 install:
-  - bash %APPVEYOR_BUILD_FOLDER%\scripts\msys2_build.sh installdeps
-  - bash %APPVEYOR_BUILD_FOLDER%\scripts\msys2_build.sh pkgbuild
+  - bash %APPVEYOR_BUILD_FOLDER%\ci\msys2_build.sh installdeps
+  - bash %APPVEYOR_BUILD_FOLDER%\ci\msys2_build.sh install
 
 build_script:
-  - bash %APPVEYOR_BUILD_FOLDER%\scripts\msys2_build.sh run
-
-after_build:
-  - bash %APPVEYOR_BUILD_FOLDER%\scripts\msys2_build.sh copy
+  - bash %APPVEYOR_BUILD_FOLDER%\ci\msys2_build.sh demo
 
 test: off
 
@@ -60,6 +59,5 @@ test: off
 #---------------------------------#
 
 artifacts:
-  - path: \tmp\output.styrene\
-    name: styrene_output
-    type: zip
+  - path: gtk3-examples-*-installer.exe
+  - path: gtk3-examples-*-standalone.zip
