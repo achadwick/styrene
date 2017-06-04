@@ -53,6 +53,17 @@ RUNTIME_DEPENDENCIES = {
     ],
 }
 
+ARCH_OPTS = {
+    # Using these ensures that the Cygwin-style packages match
+    # the deployment architecture.
+    consts.MSYSTEM.MINGW64: [
+        "--arch", "x86_64",
+    ],
+    consts.MSYSTEM.MINGW32: [
+        "--arch", "i686",
+    ],
+}
+
 
 # Class defs:
 
@@ -331,14 +342,14 @@ class NativeBundle:
         logger.debug("Got metadata for “%s”: %r", main_package, metadata)
         self.metadata.update(metadata)
 
-    @staticmethod
-    def _get_package_metadata(name, root):
+    def _get_package_metadata(self, name, root):
         """Get details about a package from the db of installed packages."""
         cmd = [
             "pacman", "--query",
             "--info", name,
             "--root", root,
         ]
+        cmd += ARCH_OPTS.get(self.msystem)
         try:
             info_str = subprocess.check_output(
                 cmd,
@@ -400,6 +411,7 @@ class NativeBundle:
             "--root", root,
             "--noprogressbar",
         ]
+        cmd += ARCH_OPTS.get(self.msystem)
         subprocess.check_call(cmd)
 
     def _install_packages(self, root, packages, pkgdirs=()):
@@ -415,6 +427,7 @@ class NativeBundle:
             "--noprogressbar",
             "--noscriptlet",  # postinst will do this
         ]
+        cmd_common += ARCH_OPTS.get(self.msystem)
         for p in self.assume_installed_packages:
             cmd_common.append("--assume-installed")
             cmd_common.append(p)
