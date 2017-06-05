@@ -658,6 +658,7 @@ class NativeBundle:
             "usr/bin/cygpath.exe",
             "usr/bin/msys-intl-*.dll",
             "usr/bin/msys-2*.dll",
+            "usr/bin/msys-gcc*.dll",
             "usr/bin/msys-iconv-*.dll",
             "mingw*/bin/win7appid.exe",
         ])
