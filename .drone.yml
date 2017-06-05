@@ -3,22 +3,28 @@
 # http://docs.tea-ci.org/usage/overview/
 
 build:
-  image: teaci/msys32
+  image: teaci/msys$$arch
   pull: true
-  shell: msys32
+  shell: mingw$$arch
   commands:
+    - if [ $$arch = 32 ]; then target=i686; fi
+    - if [ $$arch = 64 ]; then target=x86_64; fi
     - env
     - pacman -Sy --noconfirm --noprogressbar
     - ls -l /etc/pacman.d || true
     - cat /etc/pacman.d/mirrorlist.* || true
     - pacman -S --needed --noconfirm --noprogressbar zip
-    - pacman -S --needed --noconfirm --noprogressbar python3
+    - pacman -S --needed --noconfirm --noprogressbar mingw-w64-${target}-nsis
+    - pacman -S --needed --noconfirm --noprogressbar mingw-w64-${target}-gcc
+    - pacman -S --needed --noconfirm --noprogressbar mingw-w64-${target}-binutils
+    - pacman -S --needed --noconfirm --noprogressbar mingw-w64-${target}-python3-pip
     - which python3
     - python3 -m this
-    - pacman -S --needed --noconfirm --noprogressbar mingw-w64-i686-nsis
-    - pacman -S --needed --noconfirm --noprogressbar mingw-w64-i686-gcc
-    - pacman -S --needed --noconfirm --noprogressbar mingw-w64-i686-binutils
-    - pacman -S --needed --noconfirm --noprogressbar mingw-w64-x86_64-nsis
-    - pacman -S --needed --noconfirm --noprogressbar mingw-w64-x86_64-gcc
-    - pacman -S --needed --noconfirm --noprogressbar mingw-w64-x86_64-binutils
-    - ./styrene.sh --debug --colour=yes --output-dir=/tmp/test1 --no-zip --no-exe gtk3-examples.cfg
+    - which pip3
+    - pip3 install .
+    - styrene --colour=yes --output-dir=/tmp/test1 --no-exe --no-zip gtk3-examples.cfg
+
+matrix:
+  arch:
+    - 64
+    - 32
