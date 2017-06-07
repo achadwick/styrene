@@ -1,4 +1,4 @@
-# Copyright © 2016 Andrew Chadwick.
+# Copyright © 2017 Andrew Chadwick.
 #
 # This file is part of ’Styrene.
 #
@@ -19,6 +19,7 @@
 """Little utility functions"""
 
 import re
+import os
 import os.path
 import logging
 
@@ -123,3 +124,27 @@ def boolify(s):
         "N".casefold(),
         "",
     )
+
+
+def fix_tree_perms(root, filemask=0o600, dirmask=0o700):
+    """Recursively set file/folder permission bits to allow removal.
+
+    The defaults are designed to allow the tree to be removed with
+    shutil.rmtree(). This function is known to fail on Windows if its
+    folder argument contains read-only files. Styrene can't predict what
+    is installed to its temporary spaces, so we have to do this before
+    any recursive cleanups.
+
+    """
+    for dirpath, dirnames, filenames in os.walk(root, topdown=True):
+        for names, mask in [(dirnames, dirmask), (filenames, filemask)]:
+            for name in names:
+                path = os.path.join(dirpath, name)
+                mode = os.stat(path).st_mode
+                if (mode & mask) == mask:
+                    continue
+                logger.debug(
+                    "fix_tree_perms: adding 0o%03o to %r",
+                    mode, path,
+                )
+                os.chmod(path, (mode | mask))

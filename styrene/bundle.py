@@ -1,4 +1,4 @@
-# Copyright © 2016 Andrew Chadwick.
+# Copyright © 2017 Andrew Chadwick.
 #
 # This file is part of ’Styrene.
 #
@@ -23,6 +23,7 @@ from .launchers import DesktopEntry
 from .utils import str2key
 from .utils import nsis_escape
 from .utils import winsafe_filename
+from .utils import fix_tree_perms
 from . import consts
 
 import os
@@ -610,6 +611,7 @@ class NativeBundle:
         for path in junk:
             logger.debug("cleanup: removing “%s”", path)
             if os.path.isdir(path):
+                fix_tree_perms(path)
                 shutil.rmtree(path)
             elif os.path.isfile(path):
                 os.unlink(path)
@@ -689,8 +691,9 @@ class NativeBundle:
                 continue
             try:
                 if os.path.isdir(item):
+                    fix_tree_perms(item)
                     logger.debug("rmtree %r", item)
-                    shutil.rmtree(item, ignore_errors=True, onerror=None)
+                    shutil.rmtree(item)
                 elif os.path.isfile(item):
                     logger.debug("rm %r", item)
                     if not os.access(item, os.W_OK):  # native winXX sem

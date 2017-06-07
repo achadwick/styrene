@@ -1,4 +1,4 @@
-# Copyright © 2016 Andrew Chadwick.
+# Copyright © 2017 Andrew Chadwick.
 #
 # This file is part of ’Styrene.
 #
@@ -19,6 +19,7 @@
 """Launching from the command line."""
 
 from .bundle import NativeBundle
+from .utils import fix_tree_perms
 
 import optparse
 import configparser
@@ -120,7 +121,8 @@ def process_spec_file(spec, options):
             )
             return
         output_dir = os.getcwd()
-        with tempfile.TemporaryDirectory() as tmp_dir:
+        tmp_dir = tempfile.mkdtemp(prefix="styrene")
+        try:
             written = bundle.write_distributables(tmp_dir, options)
             for distfile in written:
                 distfile_final = os.path.join(
@@ -128,6 +130,12 @@ def process_spec_file(spec, options):
                     os.path.basename(distfile),
                 )
                 shutil.copy(distfile, distfile_final)
+        except:
+            raise
+        finally:
+            logger.info("Cleaning up “%s”", tmp_dir)
+            fix_tree_perms(tmp_dir)
+            shutil.rmtree(tmp_dir)
     else:
         bundle.write_distributables(output_dir, options)
 
