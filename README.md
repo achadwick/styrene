@@ -31,7 +31,7 @@ You can also bundle packages you build yourself.
 
    ```sh
    pacman -S --needed git
-   pacman -S --needed mingw-w64-i686-python3-pip mingw-w64-i686-python3-pip
+   pacman -S --needed mingw-w64-i686-python3-pip mingw-w64-x86_64-python3-pip
    ```
 
 3. Clone Styrene from its GitHub repository and install it.
