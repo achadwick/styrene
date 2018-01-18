@@ -720,7 +720,7 @@ class NativeBundle:
         )
         logger.info("Writing “%s”…", output_file_basename)
         output_file_path = os.path.join(output_dir, output_file_basename)
-        cmd = ["zip", "-Xq9r", output_file_path, os.path.curdir]
+        cmd = ["zip", "-Xq9r", os.path.abspath(output_file_path), os.path.curdir]
         subprocess.check_call(
             cmd,
             cwd=root,
@@ -855,7 +855,7 @@ class NativeBundle:
             shutil.copy(nsh_src_file_path, nsh_targ_file_path)
 
         subprocess.check_call(
-            ["makensis.exe", "-V3", "-INPUTCHARSET", "UTF8", nsi_file_path],
+            ["makensis.exe", "-V3", "-INPUTCHARSET", "UTF8", os.path.abspath(nsi_file_path)],
             cwd=output_dir,
         )
         installer_exe_path = os.path.join(output_dir, installer_exe_name)
