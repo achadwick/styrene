@@ -39,12 +39,10 @@ which creates a bundle of all the GTK3 demo apps.
 
 ```sh
 cd styrene
-./styrene.sh gtk3-examples.cfg
+./styrene.sh -o tmp gtk3-examples.cfg
 ```
 
 The distributable output files are eventually written
-into the current working directory.
-Run Styrene with `--help` to see how you can use a
-persistent output directory instead.
+into `tmp` in the current working directory.
 
 [xcfg]: https://github.com/achadwick/styrene/blib/master/gtk3-examples.cfg

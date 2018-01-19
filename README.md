@@ -46,8 +46,8 @@ You can also bundle packages you build yourself.
 4. Try it out with the demo config file!
 
    ```sh
-   styrene ./gtk3-examples.cfg
-   start .     # then try running one of the installer .exe files
+   styrene -o ./tmp ./gtk3-examples.cfg
+   start ./tmp     # then try running one of the installer .exe files
    ```
 
 5. [Read the docs](http://styrene.readthedocs.io) to find out more.
