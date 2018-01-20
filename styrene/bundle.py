@@ -686,19 +686,20 @@ class NativeBundle:
             )
             return
         surplus.sort(reverse=True)
+        removed = []
         for item in surplus:
             if not os.path.exists(item):
                 continue
             try:
                 if os.path.isdir(item):
                     fix_tree_perms(item)
-                    logger.debug("rmtree %r", item)
                     shutil.rmtree(item)
+                    removed.append(("rmtree", item))
                 elif os.path.isfile(item):
-                    logger.debug("rm %r", item)
                     if not os.access(item, os.W_OK):  # native winXX sem
                         os.chmod(item, 0o600)
                     os.unlink(item)
+                    removed.append(("unlink", item))
                 else:
                     logger.warning(
                         "Filesystem entry “%s” has an unknown type",
@@ -706,6 +707,11 @@ class NativeBundle:
                     )
             except Exception:
                 logger.exception("Failed to delete “%s”", item)
+
+        deletelog = os.path.normpath(root) + "-deletelog.txt"
+        with open(deletelog, "a", encoding="utf-8") as fp:
+            for a, p in removed:
+                print("{action} {path}".format(action=a, path=p), file=fp)
 
     def _write_zip_distfile(self, root, output_dir):
         """Package a frozen bundle as a standalone zipfile.
