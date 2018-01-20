@@ -389,7 +389,7 @@ class DesktopEntry:
                             ["windres", ico_rc, ico_o],
                             cwd=tmpdir,
                         )
-                    except:
+                    except Exception:
                         logger.exception(
                             "Icon creation with windres failed",
                         )

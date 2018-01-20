@@ -357,7 +357,7 @@ class NativeBundle:
                 universal_newlines=True,
                 env={"LANG": "C"},  # we specifically want the default
             )
-        except:
+        except Exception:
             logger.critical("Failed to run “%s”", " ".join(cmd))
             sys.exit(2)
         metadata = {}
@@ -704,7 +704,7 @@ class NativeBundle:
                         "Filesystem entry “%s” has an unknown type",
                         item,
                     )
-            except:
+            except Exception:
                 logger.exception("Failed to delete “%s”", item)
 
     def _write_zip_distfile(self, root, output_dir):
@@ -720,7 +720,11 @@ class NativeBundle:
         )
         logger.info("Writing “%s”…", output_file_basename)
         output_file_path = os.path.join(output_dir, output_file_basename)
-        cmd = ["zip", "-Xq9r", os.path.abspath(output_file_path), os.path.curdir]
+        cmd = [
+            "zip", "-Xq9r",
+            os.path.abspath(output_file_path),
+            os.path.curdir,
+        ]
         subprocess.check_call(
             cmd,
             cwd=root,
@@ -854,8 +858,13 @@ class NativeBundle:
             nsh_targ_file_path = os.path.join(output_dir, nsh_file_basename)
             shutil.copy(nsh_src_file_path, nsh_targ_file_path)
 
+        makensis_cmd = [
+            "makensis.exe", "-V3",
+            "-INPUTCHARSET", "UTF8",
+            os.path.abspath(nsi_file_path),
+        ]
         subprocess.check_call(
-            ["makensis.exe", "-V3", "-INPUTCHARSET", "UTF8", os.path.abspath(nsi_file_path)],
+            makensis_cmd,
             cwd=output_dir,
         )
         installer_exe_path = os.path.join(output_dir, installer_exe_name)
@@ -882,7 +891,7 @@ def find_surplus(root, del_patterns, keep_patterns):
     glob_opts = dict(recursive=True)
     try:
         glob.iglob("/nonexistent/**.foo", **glob_opts)
-    except:
+    except Exception:
         logger.error(
             "Glob options %r are not supported on this Python version.",
             glob_opts,

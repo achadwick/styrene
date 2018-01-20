@@ -130,8 +130,6 @@ def process_spec_file(spec, options):
                     os.path.basename(distfile),
                 )
                 shutil.copy(distfile, distfile_final)
-        except:
-            raise
         finally:
             logger.info("Cleaning up “%s”", tmp_dir)
             fix_tree_perms(tmp_dir)
@@ -250,7 +248,7 @@ def main():
         try:
             spec = configparser.SafeConfigParser()
             spec.read(spec_file, encoding="utf-8")
-        except:
+        except Exception:
             logger.exception(
                 "Failed to load bundle spec file “%s”",
                 spec_file,
@@ -258,7 +256,7 @@ def main():
             sys.exit(2)
         try:
             process_spec_file(spec, options)
-        except:
+        except Exception:
             logger.exception(
                 "Unexpected error while processing “%s”",
                 spec_file,
