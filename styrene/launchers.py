@@ -75,6 +75,7 @@ class DesktopEntry:
         self._icon = ""
         self._mimetypes = []
         self._terminal = False
+        self._force_helper = False
         self._extinfo_cache_for = None
         self._extinfo_cache = ([], [])
 
@@ -152,6 +153,7 @@ class DesktopEntry:
             ("_cmdline", "Exec", self._tokenize_cmdline),
             ("_terminal", "Terminal", boolify),
             ("_mimetypes", "MimeType", self._parse_mimetypes),
+            ("_force_helper", "StyreneLaunchUsingShell", boolify),
         ]
         for attr, key, conv in populate:
             value = caseinsens_mapping.get(key.casefold())
@@ -273,7 +275,8 @@ class DesktopEntry:
             consts.PACKAGE_DATA_SUBDIR,
         )
 
-        # Does the launcher need to invoke bash?
+        # Decide if the launcher should be invoking bash to parse the
+        # command line.
         use_helper = True
         resolved_exe = ""
         logger.debug("%s: cmdline: %r", self._basename, self._cmdline)
@@ -284,7 +287,7 @@ class DesktopEntry:
             "%s: resolved exe: %r, args: %r",
             self._basename, exe, args,
         )
-        if not self._terminal:
+        if not (self._terminal or self._force_helper):
             if (exe is not None) and (exe.lower().endswith(".exe")):
                 use_helper = False
                 resolved_exe = exe
@@ -297,8 +300,16 @@ class DesktopEntry:
             )
         elif self._terminal:
             logger.info(
-                "Launcher %s will use bash to invoke %r and then wait "
-                "because %s specifies “Terminal: true”.",
+                "Launcher %s will use bash to invoke %r in a visible window "
+                "and then wait, because %s specifies “Terminal: true”.",
+                self._basename,
+                self._cmdline,
+                "%s.desktop" % (self._basename,),
+            )
+        elif self._force_helper:
+            logger.info(
+                "Launcher %s will use bash to invoke %r in a hidden window "
+                "because %s specifies “StyreneLaunchUsingShell: true”.",
                 self._basename,
                 self._cmdline,
                 "%s.desktop" % (self._basename,),
@@ -314,7 +325,7 @@ class DesktopEntry:
             logger.info(
                 "It may be possible to override %s’s Exec line "
                 "so that it launches a .exe for the main process. "
-                "The user experience will be slightly better if you can.",
+                "The user experience may be slightly better if you can.",
                 self._basename,
             )
 

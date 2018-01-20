@@ -20,7 +20,7 @@ Main bundle specification
 
         [bundle]
         packages = ...
-        filemname_stub = ...
+        filename_stub = ...
 
 This section defines how to create the bundle,
 and allows you to override settings which would otherwise
@@ -250,17 +250,21 @@ even if there is no corresponding file on disk.
 
 All launchers need to be listed
 in the main ``[bundle]``'s ``launchers`` key.
-Launcher definitions will not be used unless they define a ``name`` and
-an ``exec`` line. Everything else is optional.
+Launcher definitions will not create anything on disk unless they define
+a ``name`` and
+an ``exec`` line.
+Everything else is optional.
+
+The keys in launcher defnition sections are case-insensitive.
 
 The values defined in a launcher definition section can use
 the standard substitution codes, as described in the section below.
 
-name
+Name
 ....
     ::
 
-        name = Event Axes
+        Name = Event Axes
 
 Provides a display name for the launcher, or overrides an existing name.
 This should be unique amongst all launchers belonging to this app: it
@@ -270,20 +274,20 @@ start menu.
 The file name of the lanucher itself is derived from the .desktop file
 name, or the name of the launcher section, and cannot be changed.
 
-comment
+Comment
 .......
     ::
 
-        comment = Test fancy input events
+        Comment = Test fancy input events
 
 A short, human-readable explanation of what the launcher is or does.
 This is only used in installed start menu shortcuts.
 
-icon
+Icon
 ....
     ::
 
-        icon = input-tablet
+        Icon = input-tablet
 
 This is the name of the icon to make for the launcher.
 When Styrene seees that a launcher has an icon,
@@ -297,15 +301,15 @@ It also trusts that the size is what is claimed by the directory structure.
 However, unlike ``png2ico`` which we could have used,
 Styrene's generated icons contain a 256x256 PNG icon.
 
-exec
+Exec
 ....
     ::
 
-        exec = gtk3-demo --run=event_axes
+        Exec = gtk3-demo --run=event_axes
 
     ::
 
-        exec = python2w.exe {msystem_subdir}/bin/mypaint %f
+        Exec = python2w.exe {msystem_subdir}/bin/mypaint %f
 
 The program to execute, possibly with arguments.
 This key has the syntax defined in the `Desktop Entry Specification`,
@@ -322,8 +326,11 @@ Styrene follows these rules whan making its ``.exe`` launchers:
 
 3. More complex command lines are passed to the MSYS2 bash.
 
+4. You can force use of bash by setting the Terminal or
+   StyreneLaunchUsingShell overrides.
+
 Using *CreateProcessW()* directly on an executable
-makes the user experience nicer.
+can make the user experience nicer.
 Apps will be pinnable
 (they will be assigned the same appid as start menu .lnk shortcuts),
 and Styrene will hide any CMD window associated with the app sensibly.
@@ -339,22 +346,32 @@ Code    Interpretation
 ``%U``  Treated as %F by styrene.
 ======  ============================================================
 
-terminal
+Terminal
 ........
     ::
 
-        terminal = true
+        Terminal = true
 
 If this boolean value is set to true,
 it forces the launcher to invoke the command via bash
 in a visible CMD window.
 The user will be asked to press return when the command has exited.
 
-mimetype
+StyreneLaunchUsingShell
+.......................
+    ::
+
+        StyreneLaunchUsingShell = true
+
+This key is a Styrene-specifc extension to the .desktop file format.
+It works like Terminal, however the window bash runs in will be hidden.
+Only use this if your application needs it.
+
+MimeType
 ........
     ::
 
-        mimetype = image/openraster;image/png;
+        MimeType = image/openraster;image/png;
 
 This key is a list of MIME types the launcher can open.
 Styrene converts this into a list of Windows file name extensions,
