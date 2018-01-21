@@ -5,7 +5,7 @@
 
 # Version formatting
 # The bit before the + sign should always match the one in setup.py.
-version: "0.3.0-alpha+{branch}.{build}"
+version: "0.3.0+{branch}.{build}"
 
 # Do not build on tags (GitHub and BitBucket)
 skip_tags: true

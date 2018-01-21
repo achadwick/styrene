@@ -6,7 +6,7 @@ from setuptools import setup
 
 setup(
     name="Styrene",
-    version="0.3.0-alpha",
+    version="0.3.0",
     description=(
         "Tool to make usable app bundles for regular Windows users "
         "out of MSYS2 binary packages"
