@@ -2,8 +2,10 @@
 -----
 
 Styrene [v0.3.0](https://github.com/achadwick/styrene/releases/tag/v0.3.0)
-has not yet been released.
+was release on 2018-01-20.
 
+* Styrene now needs a newer Python than MSYS2's.
+* We now use setuptools and advise installation with pip3.
 * ChangeLog added.
 * Postinst scripts built with `styrene --debug` now pause at the end.
 * More flexible delete/nodelete.
@@ -11,6 +13,10 @@ has not yet been released.
   sensibly with `nodelete`.
 * Doc and examples updated.
 * Can now mark packages for --assume-installed.
+* Several bugfixes and behind-the-scenes CI stuff.
+* Fix path issues for zip and exe outputs. Thanks, Elliot!
+* Launcher definitions in bundle configs can now use substs.
+* Added StyreneLaunchUsingShell override option (and use it for gtk3-demo)
 
 0.2.0
 -----
